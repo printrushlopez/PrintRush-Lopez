@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrintRUSH Lopez — Skip the Wait. Print Smarter.</title>
+  <meta name="description"
+    content="The smarter print queue system for every shop in Lopez, Quezon. Upload, pay online, and skip the wait." />
+  <meta name="theme-color" content="#0099BB" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <!-- Leaflet CSS for Map (Cloudflare CDN for reliability) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    /* ── Icon base ── */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon svg {
+      width: 1em;
+      height: 1em;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .icon-sm svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-md svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .icon-lg svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .icon-xl svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .icon-2xl svg {
+      width: 52px;
+      height: 52px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: calc(var(--header-h) + var(--space-12)) var(--space-4) var(--space-16);
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--cyan-10);
+      border: 1px solid var(--cyan-20);
+      color: var(--cyan);
+      border-radius: var(--radius-full);
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-xs);
+      font-weight: var(--fw-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: var(--space-6);
+      animation: fade-up 0.6s var(--ease-out) both;
+    }
+
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: var(--fw-black);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-5);
+      animation: fade-up 0.6s 0.1s var(--ease-out) both;
+    }
+
+    .hero-title .grad {
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: var(--lh-relaxed);
+      margin-bottom: var(--space-8);
+      animation: fade-up 0.6s 0.2s var(--ease-out) both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fade-up 0.6s 0.3s var(--ease-out) both;
+    }
+
+    .hero-preview {
+      margin-top: var(--space-16);
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fade-up 0.7s 0.4s var(--ease-out) both;
+    }
+
+    .preview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      min-width: 180px;
+      box-shadow: var(--shadow-md);
+      text-align: left;
+    }
+
+    .preview-card-label {
+      font-size: var(--text-xs);
+      color: var(--text-faint);
+      font-weight: var(--fw-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-2);
+    }
+
+    .preview-card-value {
+      font-family: var(--font-heading);
+      font-weight: var(--fw-black);
+      font-size: var(--text-3xl);
+      color: var(--text);
+    }
+
+    .preview-card-sub {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+    }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--status-ready);
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      padding: var(--space-24) var(--space-4);
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-weight: var(--fw-black);
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      text-align: center;
+      margin-bottom: var(--space-3);
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-12);
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-6);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8) var(--space-6);
+      text-align: center;
+      transition: all var(--dur-base) var(--ease-out);
+    }
+
+    .step-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+    }
+
+    .step-num {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-full);
+      background: var(--grad-brand);
+      color: #fff;
+      font-family: var(--font-heading);
+      font-weight: var(--fw-black);
+      font-size: var(--text-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-5);
+    }
+
+    .step-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-4);
+    }
+
+    .step-icon-wrap.cyan {
+      background: var(--cyan-10);
+    }
+
+    /* ── SHOP LOCATOR ── */
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: var(--radius-xl);
+      border: 1.5px solid var(--cyan);
+      box-shadow: var(--shadow-sm);
+      z-index: 1;
+      position: relative;
+      overflow: hidden;
+      background: #000; /* Prevent white flash */
+    }
+
+    /* Fail-safe positioning for Leaflet tiles if CSS loads slowly */
+    .leaflet-container img.leaflet-tile {
+      max-width: none !important;
+      max-height: none !important;
+      position: absolute;
+    }
+
+    .locator-grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: var(--space-8);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .shop-list-wrap {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: var(--space-2);
+    }
+
+    .shop-list-wrap::-webkit-scrollbar { width: 4px; }
+    .shop-list-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    .shop-geo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .shop-geo-card:hover { border-color: var(--cyan); background: var(--cyan-10); }
+    .shop-geo-card.active { border-color: var(--cyan); box-shadow: 0 0 0 2px var(--cyan-20); }
+
+    .dist-badge {
+      font-size: 10px;
+      font-weight: var(--fw-bold);
+      background: var(--cyan-10);
+      color: var(--cyan);
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      overflow-x: auto;
+      padding-bottom: var(--space-2);
+    }
+
+    .chip {
+      white-space: nowrap;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: var(--text-xs);
+      font-weight: var(--fw-semibold);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+
+    @media (max-width: 768px) {
+      .locator-grid { grid-template-columns: 1fr; }
+      #map { height: 300px; }
+    }
+
+    .step-icon-wrap.cyan {
+      background: var(--cyan-10);
+      color: var(--cyan);
+    }
+
+    .step-icon-wrap.magenta {
+      background: var(--magenta-10);
+      color: var(--magenta);
+    }
+
+    .step-icon-wrap.yellow {
+      background: var(--yellow-10);
+      color: var(--yellow);
+    }
+
+    .step-title {
+      font-family: var(--font-heading);
+      font-weight: var(--fw-bold);
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-2);
+    }
+
+    .step-desc {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      line-height: var(--lh-relaxed);
+    }
+
+    /* ── SERVICES ── */
+    .services-section {
+      background: var(--bg-alt);
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: var(--space-3);
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .cat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-3);
+      text-align: center;
+      transition: all var(--dur-fast) var(--ease-out);
+      cursor: pointer;
+    }
+
+    .cat-chip:hover {
+      border-color: var(--cyan);
+      background: var(--cyan-10);
+      transform: scale(1.03);
+    }
+
+    .cat-chip-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-2);
+    }
+
+    .cat-chip-name {
+      font-size: var(--text-xs);
+      font-weight: var(--fw-semibold);
+      color: var(--text);
+      line-height: var(--lh-snug);
+    }
+
+    /* Rotating CMYK chip icon colors */
+    .cat-chip:nth-child(3n+1) .cat-chip-icon {
+      background: var(--cyan-10);
+      color: var(--cyan);
+    }
+
+    .cat-chip:nth-child(3n+2) .cat-chip-icon {
+      background: var(--magenta-10);
+      color: var(--magenta);
+    }
+
+    .cat-chip:nth-child(3n) .cat-chip-icon {
+      background: var(--yellow-10);
+      color: var(--yellow);
+    }
+
+    /* ── PRICING ── */
+    .pricing-card {
+      max-width: 380px;
+      margin: 0 auto;
+      background: var(--grad-brand);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-10) var(--space-8);
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 20px 60px rgba(0, 153, 187, 0.25);
+    }
+
+    .pricing-amount {
+      font-family: var(--font-heading);
+      font-weight: var(--fw-black);
+      font-size: 4rem;
+    }
+
+    .pricing-period {
+      font-size: var(--text-lg);
+      opacity: 0.85;
+      margin-bottom: var(--space-6);
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: var(--space-8);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-sm);
+    }
+
+    .pricing-check {
+      width: 22px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .btn-white {
+      background: #fff;
+      color: var(--cyan);
+      font-weight: var(--fw-bold);
+    }
+
+    .btn-white:hover {
+      background: rgba(255, 255, 255, 0.92);
+      transform: translateY(-1px);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: var(--space-8) var(--space-4);
+      text-align: center;
+      color: var(--text-faint);
+      font-size: var(--text-sm);
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .footer-logo-text {
+      font-family: var(--font-heading);
+      font-weight: var(--fw-bold);
+      font-size: var(--text-base);
+    }
+
+    .footer-logo-text span {
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(0, 168, 107, 0);
+      }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .hero-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .hero-actions .btn {
+        width: 100%;
+        max-width: 320px;
+        justify-content: center;
+      }
+
+      .hero-preview {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .preview-card {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .cat-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="cmyk-bg" aria-hidden="true"></div>
+
+  <!-- ── HEADER ── -->
+  <header class="site-header">
+    <a href="/" class="logo" aria-label="PrintRUSH Lopez Home">
+      <div class="cmyk-mark" aria-hidden="true">
+        <div class="dot dot-c"></div>
+        <div class="dot dot-m"></div>
+        <div class="dot dot-y"></div>
+      </div>
+      <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+    </a>
+    <nav>
+      <button class="btn btn-primary btn-sm" id="installPwaBtn" style="display:none;margin-right:8px;">
+        <span class="icon icon-sm"><i data-lucide="download"></i></span> Install App
+      </button>
+      <a href="/owner/login.html" class="btn btn-outline btn-sm" id="shopLoginBtn">
+        <span class="icon icon-sm"><i data-lucide="store"></i></span>
+        Shop Login
+      </a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light or dark mode">
+        <span class="icon icon-sm theme-icon-sun"><i data-lucide="sun"></i></span>
+        <span class="icon icon-sm theme-icon-moon"><i data-lucide="moon"></i></span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ── HERO ── -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-eyebrow">
+        <span class="live-dot" aria-hidden="true"></span>
+        Live at Municipality of Lopez
+      </div>
+
+      <h1 class="hero-title" id="hero-heading">
+        Skip the wait.<br /><span class="grad">Print smarter.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Upload your file from home, pay with GCash, and walk in to a ready print job.
+        No more 20-minute queues at the print shop.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/order" class="btn btn-primary btn-lg" id="joinQueueBtn">
+          <span class="icon icon-md"><i data-lucide="printer"></i></span>
+          Join the Queue
+        </a>
+        <a href="/tracker" class="btn btn-outline btn-lg" id="trackJobBtn">
+          <span class="icon icon-md"><i data-lucide="scan-search"></i></span>
+          Track My Job
+        </a>
+      </div>
+
+      <!-- Live Stats Preview -->
+      <div class="hero-preview" role="region" aria-label="Live shop statistics">
+        <div class="preview-card">
+          <div class="preview-card-label">
+            <span class="live-indicator">
+              <span class="live-dot" aria-hidden="true"></span>
+              Live Queue
+            </span>
+          </div>
+          <div class="preview-card-value" id="liveQueueCount" aria-live="polite">—</div>
+          <div class="preview-card-sub">jobs in line right now</div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-card-label">Avg. Wait Time</div>
+          <div class="preview-card-value" id="liveWaitTime" aria-live="polite">—</div>
+          <div class="preview-card-sub">minutes estimated</div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-card-label">Completed Today</div>
+          <div class="preview-card-value" id="jobsToday" aria-live="polite">—</div>
+          <div class="preview-card-sub">prints delivered</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOP LOCATOR SECTION -->
+    <section class="section" style="background:var(--surface-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+      <div class="container">
+        <h2 class="section-title">Find Nearest Shop</h2>
+        <p class="section-sub">Locate specialized print shops in Lopez, Quezon based on your current position.</p>
+
+        <div class="filter-chips" id="specialtyFilters">
+          <button class="chip active" data-specialty="all">All Shops</button>
+          <button class="chip" data-specialty="documents">Documents</button>
+          <button class="chip" data-specialty="clothing">Clothing</button>
+          <button class="chip" data-specialty="large_format">Large Format</button>
+          <button class="chip" data-specialty="business">Business</button>
+        </div>
+
+        <div class="locator-grid">
+          <div id="map"></div>
+          <div class="shop-list-wrap" id="geoShopList">
+            <div style="text-align:center;padding:var(--space-8);color:var(--text-faint);">
+              <span class="icon icon-lg spin"><i data-lucide="loader"></i></span>
+              <p>Locating shops...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section class="section" aria-labelledby="how-heading">
+      <div class="container">
+        <h2 class="section-title" id="how-heading">How it works</h2>
+        <p class="section-sub">Three steps between you and your prints — whether you're at home or at the shop.</p>
+        <div class="steps">
+          <article class="step-card">
+            <div class="step-num" aria-hidden="true">1</div>
+            <div class="step-icon-wrap cyan icon-xl">
+              <i data-lucide="upload-cloud"></i>
+            </div>
+            <h3 class="step-title">Upload Your File</h3>
+            <p class="step-desc">Scan the shop's QR code or visit the site. Choose your service, upload your document,
+              and set your print preferences.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-num" aria-hidden="true">2</div>
+            <div class="step-icon-wrap magenta icon-xl">
+              <i data-lucide="credit-card"></i>
+            </div>
+            <h3 class="step-title">Pay &amp; Confirm</h3>
+            <p class="step-desc">Pay instantly via GCash or Maya — or choose cash on pickup. Get your job number and
+              live position in the queue.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-num" aria-hidden="true">3</div>
+            <div class="step-icon-wrap yellow icon-xl">
+              <i data-lucide="package-check"></i>
+            </div>
+            <h3 class="step-title">Pick Up or Deliver</h3>
+            <p class="step-desc">Get a push notification when your job is ready. Walk in and grab it — or have it
+              delivered straight to you.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SERVICES ── -->
+    <section class="section services-section" aria-labelledby="services-heading">
+      <div class="container">
+        <h2 class="section-title" id="services-heading">Everything you need, printed</h2>
+        <p class="section-sub">13 service categories across all registered shops in Lopez, Quezon.</p>
+        <div class="cat-grid" role="list">
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="file-text"></i></div>
+            <div class="cat-chip-name">Documents &amp; Copies</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="briefcase"></i></div>
+            <div class="cat-chip-name">Business Print</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="megaphone"></i></div>
+            <div class="cat-chip-name">Marketing Materials</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="layout-grid"></i></div>
+            <div class="cat-chip-name">Tarpaulin &amp; Signage</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="book-open"></i></div>
+            <div class="cat-chip-name">Book Binding</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="layers"></i></div>
+            <div class="cat-chip-name">Lamination</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="scissors"></i></div>
+            <div class="cat-chip-name">Finishing</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="shirt"></i></div>
+            <div class="cat-chip-name">Apparel Print</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="gift"></i></div>
+            <div class="cat-chip-name">Novelty Items</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="camera"></i></div>
+            <div class="cat-chip-name">Photo Services</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="zap"></i></div>
+            <div class="cat-chip-name">Specialty Print</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="pen-tool"></i></div>
+            <div class="cat-chip-name">Design Services</div>
+          </div>
+          <div class="cat-chip" role="listitem">
+            <div class="cat-chip-icon icon-md"><i data-lucide="package-plus"></i></div>
+            <div class="cat-chip-name">Value-Added</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PRICING ── -->
+    <section class="section" aria-labelledby="pricing-heading">
+      <div class="container">
+        <h2 class="section-title" id="pricing-heading">Simple pricing for any Lopez shop</h2>
+        <p class="section-sub">One flat rate per shop. No hidden fees. Cancel anytime.</p>
+        <div class="pricing-card" role="region" aria-label="Pricing plan">
+          <div class="pricing-amount">₱99</div>
+          <div class="pricing-period">per month / per shop</div>
+          <ul class="pricing-features" aria-label="Plan features">
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Unlimited print job queue</li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Live queue board + drag-drop</li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> GCash &amp; Maya payments</li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Revenue &amp; analytics dashboard
+            </li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Inventory alerts</li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Windows Bluetooth agent</li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Push notifications (customers)
+            </li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> Shipmates delivery integration
+            </li>
+            <li><span class="pricing-check icon-sm"><i data-lucide="check"></i></span> All 13 service categories</li>
+          </ul>
+          <a href="/owner/login.html" class="btn btn-white btn-lg" style="width:100%;" id="startTrialBtn">
+            Start Free Trial
+            <span class="icon icon-sm"><i data-lucide="arrow-right"></i></span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-logo">
+      <div class="cmyk-mark" style="width:24px;height:24px;" aria-hidden="true">
+        <div class="dot dot-c" style="width:12px;height:12px;"></div>
+        <div class="dot dot-m" style="width:12px;height:12px;"></div>
+        <div class="dot dot-y" style="width:12px;height:12px;"></div>
+      </div>
+      <div class="footer-logo-text"><span>PrintRUSH</span> Lopez</div>
+    </div>
+    <p>Made for Municipality of Lopez &nbsp;·&nbsp; &copy; 2026 PrintRUSH &nbsp;·&nbsp; All rights reserved</p>
+  </footer>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <style>
+    /* Theme icon visibility */
+    .theme-icon-moon {
+      display: none;
+    }
+
+    [data-theme="dark"] .theme-icon-sun {
+      display: none;
+    }
+
+    [data-theme="dark"] .theme-icon-moon {
+      display: inline-flex;
+    }
+  </style>
+
+  <script type="module">
+    import { isConfigured } from '/js/config.js';
+    import { supabase } from '/js/lib/supabase.js';
+
+    /* 1. Apply saved theme */
+    const root = document.documentElement;
+    const saved = localStorage.getItem('printrush-theme')
+      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.setAttribute('data-theme', saved);
+
+    /* 2. Theme toggle */
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('printrush-theme', next);
+    });
+
+    /* 3. Lucide icons */
+    if (window.lucide) window.lucide.createIcons();
+
+    /* 4. Service Worker */
+    if ('serviceWorker' in navigator)
+      navigator.serviceWorker.register('/js/sw.js', { scope: '/' }).catch(e => console.warn(e));
+
+    /* 5. QR redirect */
+    const shopSlug = new URLSearchParams(window.location.search).get('shop');
+    if (shopSlug) window.location.replace('/order?shop=' + encodeURIComponent(shopSlug));
+
+    /* 6. Stat DOM refs */
+    const elQueue = document.getElementById('liveQueueCount');
+    const elWait = document.getElementById('liveWaitTime');
+    const elDone = document.getElementById('jobsToday');
+
+    /* 7. Count animation */
+    function animateCount(el, n) {
+      if (typeof n !== 'number' || isNaN(n)) { el.textContent = '\u2014'; return; }
+      let c = 0;
+      const tick = () => {
+        c = Math.min(c + (Math.ceil((n - c) / 6) || 1), n);
+        el.textContent = c;
+        if (c < n) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    /* 8. Real Supabase live stats */
+    let statsChannel = null;
+    async function loadStats() {
+      if (!isConfigured()) return; // Supabase not set up yet
+      try {
+        const d = new Date(); d.setHours(0, 0, 0, 0);
+        const today = d.toISOString();
+
+        const [r1, r2, r3] = await Promise.all([
+          supabase.from('jobs').select('id', { count: 'exact', head: true }).in('job_status', ['pending', 'approved', 'processing']),
+          supabase.from('jobs').select('estimated_minutes').in('job_status', ['pending', 'approved']).not('estimated_minutes', 'is', null),
+          supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('job_status', 'done').gte('updated_at', today)
+        ]);
+
+        if (r1.error) throw r1.error;
+
+        const avg = (r2.data && r2.data.length)
+          ? Math.round(r2.data.reduce((s, j) => s + (j.estimated_minutes || 0), 0) / r2.data.length)
+          : 0;
+
+        animateCount(elQueue, r1.count ?? 0);
+        animateCount(elWait, avg);
+        animateCount(elDone, r3.count ?? 0);
+
+        if (!statsChannel) {
+          statsChannel = supabase.channel('global-queue-stats')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, loadStats)
+            .subscribe();
+        }
+      } catch (err) {
+        console.warn('PrintRUSH live stats unavailable:', err.message);
+      }
+    }
+    loadStats();
+
+    /* 10. PWA Install Prompt */
+    const installBtn = document.getElementById('installPwaBtn');
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (!window.deferredPrompt) return;
+        window.deferredPrompt.prompt();
+        const { outcome } = await window.deferredPrompt.userChoice;
+        if (outcome === 'accepted') installBtn.style.display = 'none';
+        window.deferredPrompt = null;
+      });
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        installBtn.style.display = 'inline-flex';
+      });
+    }
+  </script>
+
+  <!-- Re-run Lucide after module script in case UMD loaded late -->
+  <script>
+    window.addEventListener('load', () => {
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+  <!-- Leaflet JS -->
+  <!-- Leaflet JS (Cloudflare CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+  <!-- Shop Locator Logic -->
+  <script type="module" src="/js/student/locator.js"></script>
+</body>
+
+</html>

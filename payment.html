@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Processing Payment — PrintRUSH Lopez</title>
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="/css/tokens.css"/>
+<link rel="stylesheet" href="/css/components.css"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+.pay-wrap{max-width:480px;margin:0 auto;padding:calc(var(--header-h)+var(--space-12)) var(--space-4) var(--space-16);text-align:center;}
+.pay-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-6);}
+.pay-icon.loading{background:var(--cyan-10);color:var(--cyan);}
+.pay-icon.success{background:linear-gradient(135deg,var(--status-ready),#00c87a);color:#fff;animation:pop .5s var(--ease-out);}
+.pay-icon.failed{background:var(--magenta-10);color:var(--magenta);}
+@keyframes pop{0%{transform:scale(.5);}80%{transform:scale(1.1);}100%{transform:scale(1);}}
+.pay-title{font-family:var(--font-heading);font-weight:var(--fw-black);font-size:var(--text-2xl);margin-bottom:var(--space-2);}
+.pay-sub{color:var(--text-muted);margin-bottom:var(--space-8);}
+</style>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+<header class="site-header">
+  <a href="/" class="logo">
+    <div class="cmyk-mark" aria-hidden="true"><div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div></div>
+    <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+  </a>
+</header>
+
+<main class="pay-wrap">
+  <div class="pay-icon loading" id="payIcon">
+    <div class="spinner" style="width:36px;height:36px;border-width:3px;"></div>
+  </div>
+  <h1 class="pay-title" id="payTitle">Verifying Payment…</h1>
+  <p class="pay-sub" id="paySub">Please wait while we confirm your payment with GCash / Maya.</p>
+  <div id="payActions"></div>
+</main>
+
+<script type="module">
+import { supabase }     from '/js/lib/supabase.js';
+import { isConfigured } from '/js/config.js';
+import { waitForPayment } from '/js/lib/paymongo.js';
+
+const root  = document.documentElement;
+const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+root.setAttribute('data-theme', saved);
+
+const params   = new URLSearchParams(window.location.search);
+const jobToken = params.get('job');
+const shop     = params.get('shop');
+const status   = params.get('status'); // PayMongo returns ?status=paid or ?status=failed
+
+async function handleReturn() {
+  const icon  = document.getElementById('payIcon');
+  const title = document.getElementById('payTitle');
+  const sub   = document.getElementById('paySub');
+  const acts  = document.getElementById('payActions');
+
+  if (!jobToken) {
+    title.textContent = 'Invalid Link';
+    sub.textContent   = 'No job token found. Please return to your order.';
+    acts.innerHTML    = '<a href="/" class="btn btn-primary">Go Home</a>';
+    icon.className    = 'pay-icon failed';
+    icon.innerHTML    = '<i data-lucide="alert-circle" style="width:40px;height:40px;"></i>';
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  // If PayMongo already returned with status in URL
+  if (status === 'paid') {
+    showSuccess();
+    return;
+  }
+  if (status === 'failed' || status === 'cancelled') {
+    showFailed();
+    return;
+  }
+
+  // Otherwise poll/listen for payment confirmation
+  if (isConfigured()) {
+    const result = await waitForPayment(jobToken, 90_000);
+    if (result === 'paid') showSuccess();
+    else showFailed();
+  } else {
+    // Demo: auto-success
+    await new Promise(r => setTimeout(r, 2000));
+    showSuccess();
+  }
+}
+
+function showSuccess() {
+  const icon  = document.getElementById('payIcon');
+  const title = document.getElementById('payTitle');
+  const sub   = document.getElementById('paySub');
+  const acts  = document.getElementById('payActions');
+  icon.className = 'pay-icon success';
+  icon.innerHTML = '<i data-lucide="check" style="width:48px;height:48px;"></i>';
+  title.textContent = 'Payment Confirmed!';
+  sub.textContent   = 'Your job is now in the queue. Head to the shop or track it below.';
+  const shopParam = shop ? `&shop=${shop}` : '';
+  acts.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+      <a href="/confirmation?job=${jobToken}${shopParam}&method=gcash" class="btn btn-primary btn-lg">
+        <span class="icon icon-md"><i data-lucide="receipt"></i></span> View Confirmation
+      </a>
+      <a href="/tracker?job=${jobToken}${shopParam}" class="btn btn-outline">
+        <span class="icon icon-sm"><i data-lucide="scan-search"></i></span> Track My Order
+      </a>
+    </div>`;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function showFailed() {
+  const icon  = document.getElementById('payIcon');
+  const title = document.getElementById('payTitle');
+  const sub   = document.getElementById('paySub');
+  const acts  = document.getElementById('payActions');
+  icon.className = 'pay-icon failed';
+  icon.innerHTML = '<i data-lucide="x-circle" style="width:40px;height:40px;"></i>';
+  title.textContent = 'Payment Failed';
+  sub.textContent   = 'The payment was not completed. Your order has not been placed. You can try again or choose a different payment method.';
+  acts.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+      <a href="/order${shop ? '?shop='+shop : ''}" class="btn btn-primary">
+        <span class="icon icon-sm"><i data-lucide="rotate-ccw"></i></span> Try Again
+      </a>
+      <a href="/" class="btn btn-ghost">Back to Home</a>
+    </div>`;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+handleReturn();
+</script>
+<script>window.addEventListener('load',()=>{if(window.lucide)window.lucide.createIcons();});</script>
+</body>
+</html>

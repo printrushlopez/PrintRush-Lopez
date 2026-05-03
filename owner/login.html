@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shop Owner Login — PrintRUSH Lopez</title>
+<meta name="description" content="PrintRUSH Lopez shop owner portal login."/>
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="/css/tokens.css"/>
+<link rel="stylesheet" href="/css/components.css"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+
+<main class="owner-login-wrap">
+  <div class="owner-login-card">
+    <div class="owner-login-logo">
+      <a href="/" class="logo" style="justify-content:center;">
+        <div class="cmyk-mark" aria-hidden="true">
+          <div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div>
+        </div>
+        <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+      </a>
+    </div>
+    <h1 class="owner-login-title">Shop Owner Portal</h1>
+    <p class="owner-login-sub">Sign in to manage your queue, revenue, and services.</p>
+
+    <div id="configNotice" style="display:none;background:var(--yellow-10);border:1px solid var(--yellow);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);font-size:var(--text-xs);color:var(--text);"
+    >
+      <strong>⚠️ Setup Required</strong> — Supabase credentials are not yet configured in <code>js/config.js</code>. Please add your project URL and anon key before logging in.
+    </div>
+
+    <form id="loginForm" novalidate>
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label" for="loginEmail">Email Address</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="owner@yourshop.com" autocomplete="email" required/>
+        <div class="field-error" id="emailErr" style="display:none;"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-6);">
+        <label class="form-label" for="loginPassword">
+          Password
+          <a href="#" id="forgotLink" style="float:right;font-size:var(--text-xs);color:var(--cyan);">Forgot password?</a>
+        </label>
+        <div style="position:relative;">
+          <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required style="padding-right:48px;"/>
+          <button type="button" id="togglePw" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);" aria-label="Show password">
+            <span class="icon icon-sm"><i data-lucide="eye"></i></span>
+          </button>
+        </div>
+        <div class="field-error" id="passErr" style="display:none;"></div>
+      </div>
+      <div id="loginErr" class="field-error" style="display:none;margin-bottom:var(--space-4);text-align:center;"></div>
+      <button class="btn btn-primary btn-lg" type="submit" id="loginBtn" style="width:100%;">
+        <span class="icon icon-sm"><i data-lucide="log-in"></i></span>
+        Sign In
+      </button>
+    </form>
+
+    <div style="margin-top:var(--space-5);text-align:center;">
+      <a href="/" style="font-size:var(--text-xs);color:var(--text-muted);">
+        <span class="icon icon-xs"><i data-lucide="arrow-left"></i></span>
+        Back to PrintRUSH Lopez
+      </a>
+    </div>
+  </div>
+</main>
+
+<!-- Forgot Password Modal -->
+<div class="modal-backdrop" id="forgotModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Reset Password</h2>
+      <button class="modal-close" id="closeForgot"><span class="icon icon-sm"><i data-lucide="x"></i></span></button>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-4);">Enter your email and we'll send a reset link.</p>
+    <div class="form-group" style="margin-bottom:var(--space-4);">
+      <label class="form-label" for="resetEmail">Email</label>
+      <input class="form-input" type="email" id="resetEmail" placeholder="owner@yourshop.com"/>
+    </div>
+    <button class="btn btn-primary" id="sendResetBtn" style="width:100%;">Send Reset Link</button>
+    <div id="resetMsg" style="margin-top:var(--space-3);font-size:var(--text-sm);text-align:center;display:none;"></div>
+  </div>
+</div>
+
+<script>
+// Theme init
+const root = document.documentElement;
+const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+root.setAttribute('data-theme', saved);
+</script>
+<script type="module">
+import { supabase } from '/js/lib/supabase.js';
+import { isConfigured } from '/js/config.js';
+
+window.addEventListener('load', () => { if (window.lucide) window.lucide.createIcons(); });
+
+// Show config notice if credentials missing
+const params = new URLSearchParams(window.location.search);
+if (!isConfigured() || params.get('error') === 'not_configured') {
+  document.getElementById('configNotice').style.display = 'block';
+}
+
+// Check already logged in
+if (isConfigured()) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) window.location.href = '/owner/queue';
+}
+
+// Password visibility toggle
+document.getElementById('togglePw').addEventListener('click', () => {
+  const inp = document.getElementById('loginPassword');
+  const isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  document.getElementById('togglePw').innerHTML = `<span class="icon icon-sm"><i data-lucide="${isHidden ? 'eye-off' : 'eye'}"></i></span>`;
+  if (window.lucide) window.lucide.createIcons();
+});
+
+// Login form
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginErr');
+  const btn      = document.getElementById('loginBtn');
+
+  document.getElementById('emailErr').style.display = 'none';
+  document.getElementById('passErr').style.display  = 'none';
+  errEl.style.display = 'none';
+
+  if (!email)    { showFieldErr('emailErr', 'Email is required'); return; }
+  if (!password) { showFieldErr('passErr', 'Password is required'); return; }
+
+  if (!isConfigured()) {
+    errEl.textContent = 'Supabase is not configured. Please add your credentials to js/config.js first.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="icon icon-sm"><i data-lucide="log-in"></i></span> Sign In';
+    if (window.lucide) window.lucide.createIcons();
+    errEl.textContent = error.message === 'Invalid login credentials'
+      ? 'Invalid email or password. Please try again.'
+      : error.message;
+    errEl.style.display = 'block';
+    return;
+  }
+  window.location.href = '/owner/queue';
+});
+
+// Forgot password
+document.getElementById('forgotLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('forgotModal').classList.add('open');
+});
+document.getElementById('closeForgot').addEventListener('click', () => {
+  document.getElementById('forgotModal').classList.remove('open');
+});
+document.getElementById('sendResetBtn').addEventListener('click', async () => {
+  const email = document.getElementById('resetEmail').value.trim();
+  const msgEl = document.getElementById('resetMsg');
+  if (!email) { msgEl.textContent = 'Please enter your email.'; msgEl.style.display = 'block'; msgEl.style.color = 'var(--status-cancelled)'; return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/owner/reset-password' });
+  msgEl.textContent = error ? error.message : 'Reset link sent! Check your email.';
+  msgEl.style.color = error ? 'var(--status-cancelled)' : 'var(--status-ready)';
+  msgEl.style.display = 'block';
+});
+
+function showFieldErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+</script>
+</body>
+</html>

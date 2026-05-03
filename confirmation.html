@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Order Confirmed — PrintRUSH Lopez</title>
+<meta name="description" content="Your print job has been submitted successfully."/>
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="/css/tokens.css"/>
+<link rel="stylesheet" href="/css/components.css"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+.confirm-wrap{max-width:520px;margin:0 auto;padding:calc(var(--header-h)+var(--space-8)) var(--space-4) var(--space-16);text-align:center;}
+.success-ring{width:100px;height:100px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-6);animation:pop .5s var(--ease-out) both;box-shadow:0 0 0 16px var(--cyan-10);}
+@keyframes pop{0%{transform:scale(.5);opacity:0;}80%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+.job-num{font-family:var(--font-heading);font-weight:var(--fw-black);font-size:clamp(3rem,14vw,6rem);background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:var(--space-2);}
+.confirm-title{font-family:var(--font-heading);font-weight:var(--fw-black);font-size:var(--text-2xl);margin-bottom:var(--space-2);}
+.confirm-sub{color:var(--text-muted);margin-bottom:var(--space-8);}
+.receipt{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-5);text-align:left;margin-bottom:var(--space-6);}
+.receipt-row{display:flex;justify-content:space-between;align-items:flex-start;padding:var(--space-2) 0;border-bottom:1px solid var(--border);font-size:var(--text-sm);}
+.receipt-row:last-child{border:none;font-weight:var(--fw-bold);}
+.receipt-label{color:var(--text-muted);}
+.push-card{background:var(--cyan-10);border:1px solid var(--cyan-20);border-radius:var(--radius-xl);padding:var(--space-5);margin-bottom:var(--space-6);display:flex;gap:var(--space-4);align-items:center;text-align:left;}
+.push-icon{width:48px;height:48px;border-radius:var(--radius-lg);background:var(--cyan);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+.push-title{font-weight:var(--fw-bold);font-size:var(--text-sm);}
+.push-sub{font-size:var(--text-xs);color:var(--text-muted);margin-top:2px;}
+.actions{display:flex;flex-direction:column;gap:var(--space-3);}
+.method-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:var(--fw-semibold);}
+.method-gcash{background:var(--cyan-10);color:var(--cyan);}
+.method-cop{background:var(--yellow-10);color:var(--yellow);}
+.method-cod{background:var(--magenta-10);color:var(--magenta);}
+</style>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+<header class="site-header">
+  <a href="/" class="logo">
+    <div class="cmyk-mark" aria-hidden="true"><div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div></div>
+    <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+  </a>
+  <nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <span class="theme-icon-sun icon icon-sm"><i data-lucide="sun"></i></span>
+      <span class="theme-icon-moon icon icon-sm"><i data-lucide="moon"></i></span>
+    </button>
+  </nav>
+</header>
+
+<main class="confirm-wrap">
+  <div class="success-ring icon-2xl"><i data-lucide="check" style="color:#fff;width:48px;height:48px;"></i></div>
+  <div class="job-num" id="jobNum" aria-live="polite">—</div>
+  <h1 class="confirm-title">Order Submitted!</h1>
+  <p class="confirm-sub" id="confirmSub">Your job has been added to the queue. The shop will confirm shortly.</p>
+  <div id="methodBadge" style="margin-bottom:var(--space-6);"></div>
+
+  <div class="receipt" id="receipt">
+    <div class="receipt-row"><span class="receipt-label">Order #</span><span id="rJobNum">—</span></div>
+    <div class="receipt-row"><span class="receipt-label">Shop</span><span id="rShop">—</span></div>
+    <div class="receipt-row"><span class="receipt-label">Payment</span><span id="rPayment">—</span></div>
+    <div class="receipt-row"><span class="receipt-label">Status</span><span><span class="badge badge-pending">Pending Approval</span></span></div>
+    <div class="receipt-row"><span class="receipt-label">Estimated Total</span><span id="rTotal">—</span></div>
+  </div>
+
+  <!-- Push notification opt-in -->
+  <div class="push-card" id="pushCard">
+    <div class="push-icon icon-md"><i data-lucide="bell"></i></div>
+    <div style="flex:1;">
+      <div class="push-title">Get notified when your job is ready</div>
+      <div class="push-sub">Enable free push notifications — no app download required.</div>
+      <button class="btn btn-cyan btn-sm" id="enablePushBtn" style="margin-top:var(--space-3);">
+        <span class="icon icon-sm"><i data-lucide="bell-ring"></i></span> Enable Notifications
+      </button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/tracker" class="btn btn-primary btn-lg" id="trackBtn">
+      <span class="icon icon-md"><i data-lucide="scan-search"></i></span>
+      Track My Order
+    </a>
+    <a href="/" class="btn btn-outline">
+      <span class="icon icon-sm"><i data-lucide="home"></i></span>
+      Back to Home
+    </a>
+  </div>
+</main>
+
+<style>
+.theme-icon-moon{display:none;}[data-theme="dark"] .theme-icon-sun{display:none;}[data-theme="dark"] .theme-icon-moon{display:inline-flex;}
+</style>
+<script type="module">
+import { isConfigured } from '/js/config.js';
+import { supabase }     from '/js/lib/supabase.js';
+import { subscribePush } from '/js/lib/push.js';
+
+const root  = document.documentElement;
+const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+root.setAttribute('data-theme', saved);
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', n);
+  localStorage.setItem('printrush-theme', n);
+  if (window.lucide) window.lucide.createIcons();
+});
+
+const params = new URLSearchParams(window.location.search);
+const jobToken = params.get('job');
+const shopSlug = params.get('shop');
+const method   = params.get('method') || 'cop';
+const isDemo   = params.get('demo') === '1';
+
+// Payment badge
+const methodLabel = { gcash:'GCash / Maya', cop:'Cash on Pickup', cod:'Cash on Delivery' };
+const methodClass  = { gcash:'method-gcash', cop:'method-cop', cod:'method-cod' };
+document.getElementById('methodBadge').innerHTML = `<span class="method-badge ${methodClass[method]||'method-cop'}">${methodLabel[method]||method}</span>`;
+
+// Set tracker link
+if (jobToken && shopSlug)
+  document.getElementById('trackBtn').href = `/tracker?job=${jobToken}&shop=${shopSlug}`;
+
+let jobId = null, shopId = null;
+// Animate job number
+function animateJobNum(n) {
+  const el = document.getElementById('jobNum');
+  let c = 0;
+  const tick = () => { c = Math.min(c + Math.ceil((n-c)/6)||1, n); el.textContent = '#' + String(c).padStart(3,'0'); if(c<n) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+
+async function loadJobData() {
+  if (isDemo) {
+    document.getElementById('jobNum').textContent = '#001';
+    document.getElementById('rJobNum').textContent = 'DEMO-001';
+    document.getElementById('rShop').textContent   = shopSlug || 'Demo Shop';
+    document.getElementById('rPayment').textContent = methodLabel[method] || method;
+    document.getElementById('rTotal').textContent   = '₱0.00 (Demo)';
+    return;
+  }
+  if (!isConfigured() || !jobToken) return;
+  const { data: job } = await supabase.from('jobs').select('id,job_number,shop_id,estimated_price,shops(name)').eq('job_token', jobToken).single();
+  if (!job) return;
+  jobId  = job.id;
+  shopId = job.shop_id;
+  animateJobNum(job.job_number);
+  document.getElementById('rJobNum').textContent  = '#' + String(job.job_number).padStart(3,'0');
+  document.getElementById('rShop').textContent    = job.shops?.name || shopSlug;
+  document.getElementById('rPayment').textContent = methodLabel[method] || method;
+  document.getElementById('rTotal').textContent   = '₱' + (job.estimated_price||0).toFixed(2);
+}
+
+document.getElementById('enablePushBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('enablePushBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Enabling…';
+  const sub = await subscribePush(shopId, jobId);
+  if (sub) {
+    document.getElementById('pushCard').innerHTML = `
+      <div class="push-icon icon-md"><i data-lucide="bell-ring" style="color:#fff"></i></div>
+      <div><div class="push-title">Notifications enabled!</div><div class="push-sub">You'll be notified when your job is ready.</div></div>`;
+    if (window.lucide) window.lucide.createIcons();
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="icon icon-sm"><i data-lucide="bell-ring"></i></span> Enable Notifications';
+    if (window.lucide) window.lucide.createIcons();
+  }
+});
+
+loadJobData();
+</script>
+<script>window.addEventListener('load',()=>{if(window.lucide)window.lucide.createIcons();});</script>
+</body>
+</html>

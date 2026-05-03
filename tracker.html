@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Track My Order — PrintRUSH Lopez</title>
+<meta name="description" content="Live queue tracking for your PrintRUSH Lopez order."/>
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="/css/tokens.css"/>
+<link rel="stylesheet" href="/css/components.css"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+.track-wrap{max-width:520px;margin:0 auto;padding:calc(var(--header-h)+var(--space-8)) var(--space-4) var(--space-16);}
+/* Arc widget */
+.arc-wrap{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto var(--space-6);}
+.arc-wrap svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+.arc-track{fill:none;stroke:var(--border-md);stroke-width:10;}
+.arc-fill{fill:none;stroke:url(#arcGrad);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .8s var(--ease-out);}
+.arc-pos{font-family:var(--font-heading);font-weight:var(--fw-black);font-size:clamp(2.5rem,12vw,3.5rem);line-height:1;background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.arc-label{font-size:var(--text-xs);color:var(--text-muted);font-weight:var(--fw-medium);margin-top:4px;}
+.arc-total{font-size:var(--text-xs);color:var(--text-faint);}
+/* Status card */
+.status-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-5);margin-bottom:var(--space-5);}
+.status-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}
+.job-title{font-family:var(--font-heading);font-weight:var(--fw-black);font-size:var(--text-xl);}
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.t-step{display:flex;align-items:flex-start;gap:var(--space-3);padding-bottom:var(--space-4);position:relative;}
+.t-step:not(:last-child)::before{content:'';position:absolute;left:14px;top:30px;bottom:0;width:2px;background:var(--border-md);}
+.t-step.done::before,.t-step.active::before{background:var(--cyan-10);}
+.t-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border-md);background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;transition:all var(--dur-base) var(--ease-out);}
+.t-step.done .t-dot{background:var(--cyan);border-color:var(--cyan);color:#fff;}
+.t-step.active .t-dot{background:var(--magenta);border-color:var(--magenta);color:#fff;box-shadow:0 0 0 6px var(--magenta-10);animation:pulse-ring 2s ease infinite;}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 6px var(--magenta-10);}50%{box-shadow:0 0 0 10px var(--magenta-10);}}
+.t-info{padding-top:4px;}
+.t-title{font-weight:var(--fw-semibold);font-size:var(--text-sm);}
+.t-time{font-size:var(--text-xs);color:var(--text-faint);margin-top:2px;}
+/* Wait estimate */
+.wait-pill{display:inline-flex;align-items:center;gap:6px;background:var(--cyan-10);color:var(--cyan);border:1px solid var(--cyan-20);border-radius:var(--radius-full);padding:var(--space-2) var(--space-4);font-size:var(--text-sm);font-weight:var(--fw-semibold);margin-bottom:var(--space-6);}
+/* Ready banner */
+.ready-banner{background:linear-gradient(135deg,var(--status-ready),#00c87a);border-radius:var(--radius-xl);padding:var(--space-6);text-align:center;color:#fff;margin-bottom:var(--space-6);display:none;}
+.ready-banner.show{display:block;animation:fade-up .5s var(--ease-out);}
+@keyframes fade-up{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+/* No job state */
+.no-job{text-align:center;padding:var(--space-12) var(--space-4);}
+.no-job-icon{width:80px;height:80px;border-radius:var(--radius-2xl);background:var(--cyan-10);color:var(--cyan);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);}
+/* Realtime dot */
+.rt-dot{width:8px;height:8px;border-radius:50%;background:var(--status-ready);animation:pulse-dot 2s ease infinite;display:inline-block;margin-right:4px;}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(0,168,107,.4);}50%{box-shadow:0 0 0 6px rgba(0,168,107,0);}}
+</style>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+<header class="site-header">
+  <a href="/" class="logo">
+    <div class="cmyk-mark" aria-hidden="true"><div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div></div>
+    <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+  </a>
+  <nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <span class="theme-icon-sun icon icon-sm"><i data-lucide="sun"></i></span>
+      <span class="theme-icon-moon icon icon-sm"><i data-lucide="moon"></i></span>
+    </button>
+  </nav>
+</header>
+
+<main class="track-wrap">
+  <!-- No job state (shown if no token in URL) -->
+  <div class="no-job" id="noJob" style="display:none;">
+    <div class="no-job-icon icon-xl"><i data-lucide="scan-search"></i></div>
+    <h1 style="font-family:var(--font-heading);font-weight:var(--fw-black);font-size:var(--text-2xl);margin-bottom:var(--space-2);">Track Your Order</h1>
+    <p style="color:var(--text-muted);margin-bottom:var(--space-6);">Paste your job token below to see live status, or scan your confirmation QR code.</p>
+    <div style="display:flex;gap:var(--space-2);max-width:360px;margin:0 auto;">
+      <input type="text" class="form-input" id="tokenInput" placeholder="Enter job token…" style="flex:1;"/>
+      <button class="btn btn-cyan" id="tokenSearch">
+        <span class="icon icon-sm"><i data-lucide="search"></i></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tracker content -->
+  <div id="trackerContent" style="display:none;">
+    <!-- Ready banner -->
+    <div class="ready-banner" id="readyBanner" role="alert">
+      <div style="font-size:2rem;margin-bottom:var(--space-2);">🎉</div>
+      <div style="font-family:var(--font-heading);font-weight:var(--fw-black);font-size:var(--text-2xl);margin-bottom:var(--space-1);">Your order is ready!</div>
+      <div>Head to the shop now to pick it up.</div>
+    </div>
+
+    <!-- Queue arc -->
+    <div class="arc-wrap" id="arcWrap">
+      <svg viewBox="0 0 180 180" aria-hidden="true">
+        <defs>
+          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--cyan)"/>
+            <stop offset="100%" stop-color="var(--magenta)"/>
+          </linearGradient>
+        </defs>
+        <circle class="arc-track" cx="90" cy="90" r="80"/>
+        <circle class="arc-fill"  cx="90" cy="90" r="80" id="arcFill"
+          stroke-dasharray="502.65"
+          stroke-dashoffset="502.65"/>
+      </svg>
+      <div class="arc-pos" id="arcPos" aria-live="polite">—</div>
+      <div class="arc-label">Position in queue</div>
+      <div class="arc-total" id="arcTotal"></div>
+    </div>
+
+    <!-- Wait pill -->
+    <div style="text-align:center;margin-bottom:var(--space-6);">
+      <div class="wait-pill" id="waitPill">
+        <span class="rt-dot" aria-hidden="true"></span>
+        <span id="waitText">Calculating wait…</span>
+      </div>
+    </div>
+
+    <!-- Status card -->
+    <div class="status-card">
+      <div class="status-header">
+        <div>
+          <div class="job-title" id="jobNumDisplay">Order #—</div>
+          <div style="font-size:var(--text-xs);color:var(--text-faint);" id="shopDisplay"></div>
+        </div>
+        <div id="statusBadge"></div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline" id="timeline">
+        <div class="t-step" id="ts-pending">
+          <div class="t-dot icon-sm"><i data-lucide="clock"></i></div>
+          <div class="t-info"><div class="t-title">Submitted</div><div class="t-time" id="tt-pending">—</div></div>
+        </div>
+        <div class="t-step" id="ts-approved">
+          <div class="t-dot icon-sm"><i data-lucide="check"></i></div>
+          <div class="t-info"><div class="t-title">Shop Approved</div><div class="t-time" id="tt-approved">—</div></div>
+        </div>
+        <div class="t-step" id="ts-processing">
+          <div class="t-dot icon-sm"><i data-lucide="printer"></i></div>
+          <div class="t-info"><div class="t-title">Printing / Processing</div><div class="t-time" id="tt-processing">—</div></div>
+        </div>
+        <div class="t-step" id="ts-ready">
+          <div class="t-dot icon-sm"><i data-lucide="package-check"></i></div>
+          <div class="t-info"><div class="t-title">Ready for Pickup</div><div class="t-time" id="tt-ready">—</div></div>
+        </div>
+        <div class="t-step" id="ts-done">
+          <div class="t-dot icon-sm"><i data-lucide="circle-check-big"></i></div>
+          <div class="t-info"><div class="t-title">Completed</div><div class="t-time" id="tt-done">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+      <button class="btn btn-primary" id="enablePushBtn" style="display:none;">
+        <span class="icon icon-sm"><i data-lucide="bell-ring"></i></span> Get Notified When Ready
+      </button>
+      <a href="/" class="btn btn-outline"><span class="icon icon-sm"><i data-lucide="home"></i></span> Home</a>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+<style>
+.theme-icon-moon{display:none;}[data-theme="dark"] .theme-icon-sun{display:none;}[data-theme="dark"] .theme-icon-moon{display:inline-flex;}
+</style>
+<script type="module" src="/js/student/tracker.js"></script>
+<script>window.addEventListener('load',()=>{if(window.lucide)window.lucide.createIcons();});</script>
+</body>
+</html>

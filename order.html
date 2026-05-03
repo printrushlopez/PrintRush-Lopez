@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Place Order — PrintRUSH Lopez</title>
+<meta name="description" content="Submit your print job online to any shop in Lopez, Quezon."/>
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="/css/tokens.css"/>
+<link rel="stylesheet" href="/css/components.css"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<style>
+/* ── Layout ── */
+/* header≈64px + stepbar≈52px + extra gap = 140px total top clearance */
+.order-layout{max-width:800px;margin:0 auto;padding:140px var(--space-4) var(--space-16);}
+/* Step bar: fixed directly below header, z-index above everything */
+.step-bar{position:fixed;top:64px;left:0;right:0;z-index:9000;display:flex;align-items:center;background:var(--bg);border-bottom:1px solid var(--border);padding:var(--space-2) calc(max((100% - 800px)/2, 0px) + var(--space-4));height:52px;}
+@media(max-width:832px){.step-bar{padding:var(--space-2) var(--space-4);}}
+.step-item{display:flex;align-items:center;gap:6px;flex:1;min-width:0;}
+.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--border-md);background:var(--surface);display:flex;align-items:center;justify-content:center;font-weight:var(--fw-bold);font-size:10px;color:var(--text-muted);flex-shrink:0;transition:all var(--dur-base) var(--ease-out);}
+.step-item.active .step-circle{background:var(--cyan);border-color:var(--cyan);color:#fff;}
+.step-item.done .step-circle{background:var(--status-ready);border-color:var(--status-ready);color:#fff;}
+.step-label{font-size:10px;font-weight:var(--fw-semibold);color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+.step-item.active .step-label{color:var(--cyan);}
+.step-item.done .step-label{color:var(--status-ready);}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 var(--space-2);}
+.step-item.done+.step-line,.step-line.done{background:var(--status-ready);}
+/* Panels — simple show/hide, no animation on panel itself (avoids stacking context) */
+.panel{display:none;}
+.panel.active{display:block;}
+.panel-inner{animation:fade-up .3s var(--ease-out) both;}
+@keyframes fade-up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:480px){.step-label{display:none;}.step-item{flex:0;}.step-line{flex:1;}}
+.section-heading{font-family:var(--font-heading);font-weight:var(--fw-bold);font-size:var(--text-2xl);margin-bottom:var(--space-2);}
+.section-sub{color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-6);}
+/* Shop card */
+.shop-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-5);cursor:pointer;transition:all var(--dur-fast) var(--ease-out);display:flex;align-items:center;gap:var(--space-4);}
+.shop-card:hover,.shop-card.selected{border-color:var(--cyan);background:var(--cyan-10);}
+.shop-icon{width:48px;height:48px;border-radius:var(--radius-lg);background:var(--grad-brand);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+.shop-list{display:grid;gap:var(--space-3);}
+.shop-name{font-weight:var(--fw-bold);font-size:var(--text-base);}
+.shop-meta{font-size:var(--text-xs);color:var(--text-muted);}
+.shop-badge{font-size:10px;font-weight:var(--fw-semibold);background:var(--cyan-10);color:var(--cyan);border-radius:var(--radius-full);padding:2px 8px;}
+/* Service grid */
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:var(--space-3);}
+.svc-tile{border:2px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4);text-align:center;cursor:pointer;transition:all var(--dur-fast) var(--ease-out);background:var(--surface);}
+.svc-tile:hover,.svc-tile.selected{border-color:var(--cyan);background:var(--cyan-10);}
+.svc-tile-icon{width:44px;height:44px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-2);}
+.svc-tile:nth-child(3n+1) .svc-tile-icon{background:var(--cyan-10);color:var(--cyan);}
+.svc-tile:nth-child(3n+2) .svc-tile-icon{background:var(--magenta-10);color:var(--magenta);}
+.svc-tile:nth-child(3n)   .svc-tile-icon{background:var(--yellow-10);color:var(--yellow);}
+.svc-tile-name{font-size:var(--text-xs);font-weight:var(--fw-semibold);color:var(--text);line-height:var(--lh-snug);}
+/* Upload zone */
+.upload-zone{border:2px dashed var(--border-md);border-radius:var(--radius-xl);padding:var(--space-10) var(--space-6);text-align:center;cursor:pointer;transition:all var(--dur-base) var(--ease-out);background:var(--surface);}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--cyan);background:var(--cyan-10);}
+.upload-icon{width:64px;height:64px;border-radius:var(--radius-2xl);background:var(--cyan-10);color:var(--cyan);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);}
+.upload-file-name{font-weight:var(--fw-semibold);font-size:var(--text-sm);margin-top:var(--space-3);color:var(--cyan);}
+/* Options grid */
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);}
+@media(max-width:540px){.opts-grid{grid-template-columns:1fr;}}
+/* Price box */
+.price-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-5);}
+.price-total{font-family:var(--font-heading);font-weight:var(--fw-black);font-size:var(--text-4xl);color:var(--text);margin:var(--space-2) 0;}
+.price-row{display:flex;justify-content:space-between;font-size:var(--text-sm);padding:var(--space-2) 0;border-bottom:1px solid var(--border);}
+.price-row:last-child{border:none;font-weight:var(--fw-bold);}
+/* Anti-spam note */
+.spam-note{background:var(--cyan-10);border:1px solid var(--cyan-20);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);font-size:var(--text-xs);color:var(--text-muted);display:flex;gap:var(--space-2);align-items:flex-start;}
+/* Toggle buttons */
+.toggle-group{display:flex;gap:var(--space-2);flex-wrap:wrap;}
+.toggle-btn{padding:var(--space-2) var(--space-4);border-radius:var(--radius-full);border:1.5px solid var(--border-md);background:var(--surface);font-size:var(--text-xs);font-weight:var(--fw-semibold);cursor:pointer;color:var(--text-muted);transition:all var(--dur-fast) var(--ease-out);}
+.toggle-btn.active{border-color:var(--cyan);background:var(--cyan-10);color:var(--cyan);}
+/* Nav buttons */
+.nav-buttons{display:flex;gap:var(--space-3);margin-top:var(--space-8);justify-content:space-between;}
+/* Loading overlay */
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:var(--z-modal);display:none;}
+.loading-overlay.show{display:flex;}
+.loading-box{background:var(--surface);border-radius:var(--radius-xl);padding:var(--space-8);text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--space-4);}
+/* Error state */
+.field-error{font-size:var(--text-xs);color:var(--status-cancelled);margin-top:var(--space-1);}
+.form-input.error,.form-select.error,.form-textarea.error{border-color:var(--status-cancelled);}
+</style>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+<header class="site-header">
+  <a href="/" class="logo">
+    <div class="cmyk-mark" aria-hidden="true"><div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div></div>
+    <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+  </a>
+  <nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <span class="theme-icon-sun icon icon-sm"><i data-lucide="sun"></i></span>
+      <span class="theme-icon-moon icon icon-sm"><i data-lucide="moon"></i></span>
+    </button>
+  </nav>
+</header>
+
+<!-- Step Bar — fixed position, outside main scroll container -->
+<div class="step-bar" role="progressbar" aria-label="Order steps" id="stepBar">
+  <div class="step-item active" id="si1"><div class="step-circle">1</div><span class="step-label">Shop &amp; Service</span></div>
+  <div class="step-line" id="sl1"></div>
+  <div class="step-item" id="si2"><div class="step-circle">2</div><span class="step-label">File &amp; Options</span></div>
+  <div class="step-line" id="sl2"></div>
+  <div class="step-item" id="si3"><div class="step-circle">3</div><span class="step-label">Your Info</span></div>
+  <div class="step-line" id="sl3"></div>
+  <div class="step-item" id="si4"><div class="step-circle">4</div><span class="step-label">Review</span></div>
+</div>
+
+<main class="order-layout">
+  <!-- STEP 1: Shop + Service -->
+  <div class="panel active" id="panel1">
+    <div class="panel-inner">
+    <h1 class="section-heading">Choose a Shop &amp; Service</h1>
+    <p class="section-sub">Select a registered PrintRUSH shop in Lopez, Quezon, then pick what you need.</p>
+
+    <div id="shopSection">
+      <p style="font-size:var(--text-sm);font-weight:var(--fw-semibold);color:var(--text-muted);margin-bottom:var(--space-3);">REGISTERED SHOPS</p>
+      <div class="shop-list" id="shopList">
+        <div class="skeleton" style="height:80px;border-radius:var(--radius-xl);"></div>
+        <div class="skeleton" style="height:80px;border-radius:var(--radius-xl);margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:var(--space-8);" id="serviceSection">
+      <p style="font-size:var(--text-sm);font-weight:var(--fw-semibold);color:var(--text-muted);margin-bottom:var(--space-3);">SELECT SERVICE</p>
+      <div class="svc-grid" id="serviceGrid">
+        <div class="skeleton" style="height:100px;border-radius:var(--radius-lg);"></div>
+        <div class="skeleton" style="height:100px;border-radius:var(--radius-lg);"></div>
+        <div class="skeleton" style="height:100px;border-radius:var(--radius-lg);"></div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <a href="/" class="btn btn-ghost"><span class="icon icon-sm"><i data-lucide="arrow-left"></i></span> Back</a>
+      <button class="btn btn-primary" id="step1Next" disabled>
+        Next <span class="icon icon-sm"><i data-lucide="arrow-right"></i></span>
+      </button>
+    </div>
+    </div><!-- /panel-inner -->
+  </div>
+
+  <!-- STEP 2: File + Options -->
+  <div class="panel" id="panel2">
+    <div class="panel-inner">
+    <h2 class="section-heading">File &amp; Print Options</h2>
+    <p class="section-sub" id="step2sub">Configure your order details.</p>
+
+    <!-- File Upload (shown for document/photo services) -->
+    <div id="fileSection" style="margin-bottom:var(--space-6);">
+      <label class="form-label" style="margin-bottom:var(--space-3);">Upload File <span style="color:var(--status-cancelled)">*</span></label>
+      <div class="upload-zone" id="uploadZone" tabindex="0" role="button" aria-label="Click or drag to upload file">
+        <div class="upload-icon icon-xl"><i data-lucide="upload-cloud"></i></div>
+        <p style="font-weight:var(--fw-semibold);margin-bottom:var(--space-1);">Click or drag your file here</p>
+        <p style="font-size:var(--text-xs);color:var(--text-faint);">PDF, DOCX, JPG, PNG, PPTX — max 50MB</p>
+        <div class="upload-file-name" id="fileName"></div>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.pptx,.ppt,.xls,.xlsx" style="display:none;" aria-label="File upload"/>
+    </div>
+
+    <!-- Custom description (for mugs, shirts, etc.) -->
+    <div id="descSection" style="margin-bottom:var(--space-6);display:none;">
+      <div class="form-group">
+        <label class="form-label" for="customDesc">Describe Your Order <span style="color:var(--status-cancelled)">*</span></label>
+        <textarea class="form-textarea" id="customDesc" rows="4" placeholder="Describe size, color, design, quantity, and any special requirements..."></textarea>
+      </div>
+    </div>
+
+    <!-- Print Options -->
+    <div id="printOptions" style="margin-bottom:var(--space-6);">
+      <div class="opts-grid">
+        <div class="form-group">
+          <label class="form-label" for="numPages">Number of Pages</label>
+          <input type="number" class="form-input" id="numPages" min="1" max="9999" value="1" placeholder="1"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="numCopies">Copies</label>
+          <input type="number" class="form-input" id="numCopies" min="1" max="999" value="1" placeholder="1"/>
+        </div>
+      </div>
+
+      <!-- Page Detection Result + Range Selector -->
+      <div id="pageDetectBox" style="display:none;margin-top:var(--space-4);">
+        <div style="display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--cyan-10);border:1px solid var(--cyan-20);border-radius:var(--radius-lg);">
+          <span class="icon icon-sm" style="color:var(--cyan);flex-shrink:0;"><i data-lucide="file-scan"></i></span>
+          <span style="font-size:var(--text-sm);font-weight:var(--fw-semibold);color:var(--text);">Auto-detected: <span id="detectedPages" style="color:var(--cyan);">0</span> pages</span>
+          <span id="detectSpinner" class="spinner" style="width:14px;height:14px;border-width:2px;display:none;margin-left:auto;"></span>
+        </div>
+      </div>
+
+      <!-- Print Range Selector (shown after page detection) -->
+      <div id="printRangeSection" style="display:none;margin-top:var(--space-4);">
+        <label class="form-label" style="margin-bottom:var(--space-3);">Pages to Print</label>
+        <div class="toggle-group" id="rangeToggle">
+          <button class="toggle-btn active" data-val="all">All Pages</button>
+          <button class="toggle-btn" data-val="custom">Specific Pages</button>
+        </div>
+        <div id="customRangeInput" style="display:none;margin-top:var(--space-3);">
+          <input type="text" class="form-input" id="pageRange" placeholder="e.g. 1-5, 8, 10-12" aria-label="Page range"/>
+          <div id="rangeStatus" style="font-size:var(--text-xs);margin-top:var(--space-1);color:var(--text-muted);">Enter pages to print — separate with commas, use hyphens for ranges.</div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:var(--space-4);">
+        <label class="form-label">Color Mode</label>
+        <div class="toggle-group" id="colorToggle">
+          <button class="toggle-btn active" data-val="bw">Black &amp; White</button>
+          <button class="toggle-btn" data-val="color">Full Color</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:var(--space-4);">
+        <label class="form-label" for="paperSize">Paper Size</label>
+        <select class="form-select" id="paperSize">
+          <option value="a4">A4 (standard)</option>
+          <option value="letter">Letter</option>
+          <option value="legal">Legal</option>
+          <option value="a3">A3</option>
+          <option value="a5">A5</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-top:var(--space-4);">
+        <label class="form-label" for="printSide">Print Side</label>
+        <select class="form-select" id="printSide">
+          <option value="single">Single-sided</option>
+          <option value="double">Double-sided</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Special Instructions -->
+    <div class="form-group" style="margin-bottom:var(--space-6);">
+      <label class="form-label" for="instructions">Special Instructions <span style="color:var(--text-faint)">(optional)</span></label>
+      <textarea class="form-textarea" id="instructions" rows="3" placeholder="Staple, binding, specific pages to print, etc."></textarea>
+    </div>
+
+    <!-- Live Price Box -->
+    <div class="price-box">
+      <p style="font-size:var(--text-xs);font-weight:var(--fw-semibold);color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Price Estimate</p>
+      <div class="price-total"><span style="font-size:var(--text-xl);color:var(--text-muted)">₱</span><span id="priceDisplay">0.00</span></div>
+      <div id="priceBreakdown"></div>
+      <p style="font-size:var(--text-xs);color:var(--text-faint);margin-top:var(--space-2);">Final price confirmed by shop owner before processing.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-ghost" id="step2Back"><span class="icon icon-sm"><i data-lucide="arrow-left"></i></span> Back</button>
+      <button class="btn btn-primary" id="step2Next">
+        Next <span class="icon icon-sm"><i data-lucide="arrow-right"></i></span>
+      </button>
+    </div>
+    </div><!-- /panel-inner p2 -->
+  </div>
+
+  <!-- STEP 3: Customer Info -->
+  <div class="panel" id="panel3">
+    <div class="panel-inner">
+    <h2 class="section-heading">Your Information</h2>
+    <p class="section-sub">No account needed. We use this to identify your order.</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+      <div class="form-group">
+        <label class="form-label" for="custName">Full Name <span style="color:var(--status-cancelled)">*</span></label>
+        <input type="text" class="form-input" id="custName" placeholder="e.g. Juan dela Cruz" autocomplete="name"/>
+        <div class="field-error" id="nameErr"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="custContact">Contact Number <span style="color:var(--text-faint)">(optional, for SMS updates)</span></label>
+        <input type="tel" class="form-input" id="custContact" placeholder="09XXXXXXXXX" autocomplete="tel"/>
+      </div>
+
+      <!-- Payment method selection -->
+      <div class="form-group">
+        <label class="form-label">Payment Method <span style="color:var(--status-cancelled)">*</span></label>
+        <div class="payment-options" id="paymentOptions">
+          <div class="payment-option selected" data-method="gcash" tabindex="0" role="radio" aria-checked="true">
+            <div class="payment-option-icon" style="background:var(--cyan-10);color:var(--cyan);"><i data-lucide="smartphone"></i></div>
+            <div class="payment-option-body"><div class="payment-option-title">GCash / Maya</div><div class="payment-option-desc">Pay online now via PayMongo — instant confirmation</div></div>
+            <div class="payment-option-radio"></div>
+          </div>
+          <div class="payment-option" data-method="cop" tabindex="0" role="radio" aria-checked="false">
+            <div class="payment-option-icon" style="background:var(--yellow-10);color:var(--yellow);"><i data-lucide="store"></i></div>
+            <div class="payment-option-body"><div class="payment-option-title">Cash on Pickup</div><div class="payment-option-desc">Pay cash when you collect your order at the shop</div></div>
+            <div class="payment-option-radio"></div>
+          </div>
+          <div class="payment-option" data-method="cod" tabindex="0" role="radio" aria-checked="false">
+            <div class="payment-option-icon" style="background:var(--magenta-10);color:var(--magenta);"><i data-lucide="package"></i></div>
+            <div class="payment-option-body"><div class="payment-option-title">Cash on Delivery</div><div class="payment-option-desc">We deliver to you — pay the rider on arrival</div></div>
+            <div class="payment-option-radio"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery address (shown for COD) -->
+      <div id="deliverySection" style="display:none;">
+        <div class="form-group">
+          <label class="form-label" for="deliveryAddr">Delivery Address <span style="color:var(--status-cancelled)">*</span></label>
+          <textarea class="form-textarea" id="deliveryAddr" rows="3" placeholder="Street, Barangay, Municipality, Province"></textarea>
+          <div class="field-error" id="addrErr"></div>
+        </div>
+      </div>
+
+      <!-- Spam protection note -->
+      <div class="spam-note">
+        <span class="icon icon-sm" style="color:var(--cyan);flex-shrink:0;margin-top:1px;"><i data-lucide="shield-check"></i></span>
+        <span>Your device is fingerprinted to prevent spam. Each device is limited to 3 active jobs per shop at a time. Shop owners can manually approve suspicious orders.</span>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-ghost" id="step3Back"><span class="icon icon-sm"><i data-lucide="arrow-left"></i></span> Back</button>
+      <button class="btn btn-primary" id="step3Next">
+        Review Order <span class="icon icon-sm"><i data-lucide="arrow-right"></i></span>
+      </button>
+    </div>
+    </div><!-- /panel-inner p3 -->
+  </div>
+
+  <!-- STEP 4: Review + Submit -->
+  <div class="panel" id="panel4">
+    <div class="panel-inner">
+    <h2 class="section-heading">Review Your Order</h2>
+    <p class="section-sub">Double-check everything before submitting.</p>
+
+    <div id="reviewCard" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;margin-bottom:var(--space-6);">
+      <div style="padding:var(--space-5);" id="reviewContent"></div>
+    </div>
+
+    <!-- hCaptcha -->
+    <div style="margin-bottom:var(--space-6);">
+      <label class="form-label" style="margin-bottom:var(--space-3);">Security Verification</label>
+      <div class="h-captcha" id="hcaptchaWidget"
+            data-sitekey="10000000-ffff-ffff-ffff-000000000001"
+            data-theme="auto"
+            data-size="normal"
+            aria-label="Security verification"></div>
+      <p style="font-size:var(--text-xs);color:var(--text-faint);margin-top:var(--space-2);">Free anti-spam protection. Complete the challenge to submit your order.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-ghost" id="step4Back"><span class="icon icon-sm"><i data-lucide="arrow-left"></i></span> Back</button>
+      <button class="btn btn-primary btn-lg" id="submitBtn" style="min-width:200px;">
+        <span class="icon icon-md"><i data-lucide="printer"></i></span>
+        Submit Order
+      </button>
+    </div>
+    </div><!-- /panel-inner p4 -->
+  </div>
+</main>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-label="Submitting order">
+  <div class="loading-box">
+    <div class="spinner" style="width:40px;height:40px;border-width:3px;"></div>
+    <p style="font-weight:var(--fw-semibold);" id="loadingMsg">Submitting your order…</p>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+<style>
+.theme-icon-moon{display:none;}[data-theme="dark"] .theme-icon-sun{display:none;}[data-theme="dark"] .theme-icon-moon{display:inline-flex;}
+</style>
+<script type="module" src="/js/student/order.js"></script>
+<script>window.addEventListener('load',()=>{if(window.lucide)window.lucide.createIcons();});</script>
+</body>
+</html>

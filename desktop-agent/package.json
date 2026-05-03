@@ -1,0 +1,17 @@
+{
+  "name": "desktop-agent",
+  "version": "1.0.0",
+  "description": "PrintRUSH Lopez Desktop Agent",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "axios": "^1.7.2",
+    "chokidar": "^3.6.0",
+    "dotenv": "^16.4.7",
+    "electron": "^34.3.0",
+    "pdf-to-printer": "^5.6.0"
+  }
+}

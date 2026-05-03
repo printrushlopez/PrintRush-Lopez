@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PrintRUSH Desktop Agent</title>
+<link rel="stylesheet" href="../../css/tokens.css">
+<link rel="stylesheet" href="../../css/components.css">
+<style>
+  body { margin: 0; background: var(--bg); color: var(--text); padding: 20px; font-family: var(--font-body); }
+  .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
+  .agent-badge { font-size: 11px; padding: 4px 8px; background: rgba(0, 188, 212, 0.1); color: var(--cyan); border-radius: 4px; border: 1px solid var(--cyan-20); }
+  
+  /* Walk-in Modal */
+  .walkin-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; justify-content: center; align-items: center; }
+  .walkin-modal.open { display: flex; }
+  .walkin-card { background: var(--surface); border-radius: var(--radius-xl); padding: 24px; max-width: 400px; width: 100%; border: 1px solid var(--border); }
+  .file-info { background: var(--bg); padding: 12px; border-radius: 8px; border: 1px dashed var(--cyan); margin: 16px 0; font-family: monospace; font-size: 12px; color: var(--text-muted); word-break: break-all; }
+  
+  /* Simple Queue Mirror */
+  .mirror-list { display: flex; flex-direction: column; gap: 12px; }
+  .mirror-item { padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1 style="margin:0;font-family:var(--font-heading);font-size:24px;">PrintRUSH <span style="font-weight:400">Agent</span></h1>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Local Queue Mirror & Bluetooth Receiver</div>
+  </div>
+  <div class="agent-badge">● ONLINE</div>
+</div>
+
+<h3>Live Queue Mirror</h3>
+<div id="queueList" class="mirror-list">
+  <div style="color:var(--text-muted);font-size:14px;">Loading local queue...</div>
+</div>
+
+<!-- New Walk-in Job Modal -->
+<div id="walkinModal" class="walkin-modal">
+  <div class="walkin-card">
+    <h2 style="margin:0 0 8px;color:var(--cyan);font-family:var(--font-heading);">Bluetooth File Received!</h2>
+    <div style="font-size:13px;color:var(--text-muted);">A new file was beamed to this computer. Create a walk-in job for it?</div>
+    
+    <div class="file-info" id="fileNameDisplay"></div>
+    
+    <div class="form-group">
+      <label class="form-label">Service Type</label>
+      <select id="serviceSelect" class="form-select">
+        <option value="documents">Documents & Copies (₱2/pg)</option>
+        <option value="photo">Photo Printing (₱20/pc)</option>
+        <option value="tarpaulin">Tarpaulin (₱20/sqft)</option>
+      </select>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label class="form-label">Pages/Sqft</label>
+        <input type="number" id="pagesInput" class="form-input" value="1" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Copies</label>
+        <input type="number" id="copiesInput" class="form-input" value="1" min="1">
+      </div>
+    </div>
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;">
+      <button class="btn btn-ghost" id="cancelWalkinBtn">Dismiss</button>
+      <button class="btn btn-primary" id="createWalkinBtn">Add to Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- Load Supabase UMD -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./renderer.js"></script>
+</body>
+</html>

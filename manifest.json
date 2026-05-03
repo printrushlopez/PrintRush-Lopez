@@ -1,0 +1,44 @@
+{
+  "name": "PrintRUSH Lopez",
+  "short_name": "PrintRUSH",
+  "description": "Smart queue management for campus printing shops.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0099BB",
+  "background_color": "#ffffff",
+  "lang": "en-PH",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Join Queue",
+      "short_name": "Queue",
+      "url": "/order.html",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Track My Job",
+      "short_name": "Track",
+      "url": "/tracker.html",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "share_target": {
+    "action": "/order.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/pdf", "image/*", "application/msword",
+                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+        }
+      ]
+    }
+  }
+}

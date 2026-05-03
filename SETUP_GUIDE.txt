@@ -1,0 +1,122 @@
+# PrintRUSH Lopez — Setup & Deployment Guide
+
+I have already updated your `js/config.js` with the Supabase credentials you provided. To fully publish and deploy the project, follow these steps:
+
+## 1. Database Setup (Supabase)
+
+You must initialize your database schema and create your first shop.
+
+### Step A: Initialize Schema
+1. Log in to your Supabase Dashboard (https://supabase.com/dashboard).
+2. Go to your project (drgdywiewrvccbvjsswl).
+3. Open the SQL Editor in the left sidebar.
+4. Create a "New Query".
+5. Copy the entire contents of `supabase/schema.sql` and paste it into the editor.
+6. Click Run. This will create all tables, indexes, and functions (including the PostGIS map search).
+
+### Step B: Create Your First Shop
+After running the schema, you need to add your shop to the `shops` table. Run this SQL in the editor:
+
+```sql
+-- Replace 'Your Shop Name' with your actual shop name
+INSERT INTO shops (name, slug, address, lat, lng, specialties, is_active)
+VALUES (
+  'PrintRUSH Lopez Main', 
+  'printrush-main', 
+  'Lopez, Quezon', 
+  13.8833, 
+  122.2667, 
+  '{documents, business, marketing}', 
+  true
+)
+RETURNING id;
+```
+**Take note of the ID returned.** This is your **Shop ID**.
+
+---
+
+## 2. Storage Setup
+You need to create a bucket for uploaded files.
+1. Go to Storage in the Supabase sidebar.
+2. Create a new bucket named `job-files`.
+3. Set the bucket to Public (so customers can upload and you can view).
+
+---
+
+## 3. Edge Functions & API Keys (PayMongo & Shipmates)
+
+PrintRUSH Lopez uses Supabase Edge Functions to securely process payments and book deliveries without exposing your secret API keys to the browser. You must deploy these functions and set your secrets.
+
+### Prerequisites
+1. You must have the Supabase CLI installed on your computer.
+2. Open your terminal in the `PrintRush Lopez` project folder.
+3. Log in to the CLI: `supabase login`
+4. Link your project: `supabase link --project-ref drgdywiewrvccbvjsswl`
+
+### Step A: Deploy Edge Functions
+Deploy the functions that handle payments and deliveries:
+```bash
+supabase functions deploy create-payment
+supabase functions deploy dispatch-delivery
+```
+
+### Step B: Configure Shipmates
+Shipmates requires an API key to book riders (LBC, J&T, etc.).
+1. Create a Shipmates Account (https://shipmates.ph/).
+2. Get your Production API Key from their dashboard.
+3. Save it to your Supabase project securely via CLI:
+```bash
+supabase secrets set SHIPMATES_API_KEY=your_live_shipmates_key_here
+```
+
+### Step C: Configure PayMongo
+PayMongo requires a Secret Key to create checkout sessions.
+1. Create a PayMongo Account (https://paymongo.com/).
+2. Get your Secret Key (sk_live_... or sk_test_...) from the Developers section.
+3. Save it to your Supabase project securely via CLI:
+```bash
+supabase secrets set PAYMONGO_SECRET_KEY=your_paymongo_secret_key_here
+```
+4. Important: You must also set up a Webhook in the PayMongo Dashboard pointing to your Supabase Edge Function (e.g., https://drgdywiewrvccbvjsswl.supabase.co/functions/v1/paymongo-webhook) so your database knows when an order is actually paid.
+
+### Step D: Configure VAPID (Web Push Notifications)
+VAPID keys are required to send push notifications to browsers without using a third-party service like Firebase.
+1. Generate a VAPID key pair (Public and Private) online (e.g., at https://vapidkeys.com/).
+2. Public Key: Open `js/lib/push.js` and paste your Public Key into the `VAPID_PUBLIC_KEY` variable at the top.
+3. Private Key: Save the Private Key securely to your Supabase project via CLI. *Important: You must deploy the notify-push Edge Function first.*
+```bash
+supabase functions deploy notify-push
+supabase secrets set VAPID_PRIVATE_KEY=your_vapid_private_key_here
+supabase secrets set VAPID_PUBLIC_KEY=your_vapid_public_key_here
+```
+
+### Step E: Configure hCaptcha (Anti-Spam)
+hCaptcha prevents bots from uploading massive files and filling up your storage.
+1. Create a free account at https://www.hcaptcha.com/.
+2. Add a new site (e.g., print-rush-lopez.vercel.app) to get a Sitekey.
+3. Open `order.html` and locate the `<div class="h-captcha" ...>` on line ~331.
+4. Replace the `data-sitekey="10000000-ffff-ffff-ffff-000000000001"` with your actual Sitekey.
+5. Get your Secret Key from your hCaptcha account settings.
+6. Save the Secret Key to your Supabase project securely via CLI (used by the backend to verify the captcha):
+```bash
+supabase secrets set HCAPTCHA_SECRET=your_hcaptcha_secret_key_here
+```
+
+---
+
+## 4. Deployment (Vercel)
+
+Since your App URL is already on Vercel, any changes pushed to your GitHub repository will automatically deploy.
+
+1. Visit: https://print-rush-lopez.vercel.app/
+
+---
+
+## 5. Final Checklist for "Fully Published"
+
+To be fully operational, ensure you have:
+1. Run the `schema.sql` in Supabase.
+2. Deployed the Edge Functions and set the PayMongo/Shipmates/VAPID secrets via CLI.
+3. Created your first shop in the database.
+4. Created an owner account at `/owner/login.html` and linked it to your shop in the `shop_owners` table.
+5. Verified the map loads correctly on the landing page.

@@ -1,0 +1,52 @@
+# PrintRUSH Lopez — Admin Portal & Integrations Plan
+
+This plan addresses your request to add a Super Admin Portal to manage shops easily without using the Supabase SQL editor, and provides deep insights into how PayMongo and Shipmates are currently implemented.
+
+## Deep Think: Super Admin Portal
+
+Creating shops manually in the database is indeed tedious. A dedicated **Super Admin Portal** is the standard SaaS solution.
+
+### Proposed Architecture for Admin Portal
+
+1.  **Authentication & Roles**: 
+    - We will create a new table `platform_admins` linked to Supabase Auth.
+    - An admin logs in at a secure route: `/admin/login.html`.
+    - Only users existing in `platform_admins` can access the `/admin/dashboard.html`.
+
+2.  **Dashboard Content (Features)**:
+    - **Overview Metric Cards**: Total active shops, total platform revenue, total jobs processed this month.
+    - **Shop Management Table**: A list of all shops where you can click "Add New Shop", edit details (name, address, delivery fees), and toggle them Active/Inactive. Adding a shop here will automatically generate the `Shop ID` and assign the initial owner.
+    - **Subscription Monitor**: A tab to view which shops are on the `basic` vs `pro` plan, and their subscription renewal dates (we will add a `subscription_expires_at` column to the `shops` table).
+    - **Admin Management**: A simple form to invite other Super Admins by email.
+    - **System Health**: A live feed of error logs (e.g., if a Shipmates delivery fails to book).
+
+## PayMongo & Shipmates: Current Implementation
+
+Both are **truly implemented** in the architecture, but they rely on **Supabase Edge Functions** to keep your API keys secure. You cannot put secret keys in the frontend JavaScript, or hackers will steal them.
+
+1.  **PayMongo**: 
+    - **How it works**: When a customer selects GCash, `js/lib/paymongo.js` sends a request to your Supabase server. A secure Edge Function (`create-payment`) talks to PayMongo, generates a checkout link, and sends it back to the customer.
+    - **Setup needed**: You need a PayMongo Secret Key and must configure a Webhook in the PayMongo dashboard to tell Supabase when the customer actually pays.
+2.  **Shipmates**:
+    - **How it works**: When a shop owner clicks "Dispatch" on the Queue Board, `js/lib/shipmates.js` calls the `dispatch-delivery` Edge Function. This function uses your `SHIPMATES_API_KEY` to book a rider and saves the tracking number to the database.
+
+## Proposed Changes to Implement Admin Portal
+
+### 1. Database Updates
+- [MODIFY] supabase/schema.sql
+- Add `platform_admins` table.
+- Add `subscription_expires_at` to the `shops` table.
+
+### 2. Admin Frontend
+- [NEW] admin/login.html & admin/dashboard.html
+- Build the secure UI for Super Admins.
+- [NEW] js/admin/dashboard.js
+- Logic to fetch shops, add shops, and manage subscriptions via Supabase JS.
+
+### 3. Setup Guide Expansion
+- [MODIFY] SETUP_GUIDE.txt
+- Add commands on how to set up the first Super Admin.
+
+## Next Steps
+
+If you approve this plan, I will immediately begin coding the `platform_admins` database update and building the `/admin/` portal!

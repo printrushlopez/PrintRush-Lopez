@@ -1,0 +1,303 @@
+/* =============================================================
+   PrintRUSH Lopez — Design Tokens
+   CMYK Color System · Light/Dark Mode · CSS Custom Properties
+   ============================================================= */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─────────────────────────────────────────────
+   LIGHT MODE (default)
+───────────────────────────────────────────── */
+:root {
+  /* CMYK Brand Colors — adjusted for white bg contrast */
+  --cyan:       #0099BB;
+  --magenta:    #CC006A;
+  --yellow:     #B8900A;
+  --key:        #0D0D1A;
+
+  /* Derived CMYK Tints */
+  --cyan-10:    rgba(0, 153, 187, 0.10);
+  --cyan-20:    rgba(0, 153, 187, 0.20);
+  --magenta-10: rgba(204, 0, 106, 0.10);
+  --magenta-20: rgba(204, 0, 106, 0.20);
+  --yellow-10:  rgba(184, 144, 10, 0.10);
+
+  /* Backgrounds */
+  --bg:         #FFFFFF;
+  --bg-alt:     #F7F7FC;
+  --surface:    #F2F2F8;
+  --surface-2:  #E8E8F2;
+  --surface-3:  #DDDDE8;
+
+  /* Text */
+  --text:       #0D0D1A;
+  --text-muted: #55556E;
+  --text-faint: #9999B0;
+
+  /* Borders & Shadows */
+  --border:     rgba(0, 0, 0, 0.08);
+  --border-md:  rgba(0, 0, 0, 0.14);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-xl:  0 16px 48px rgba(0,0,0,0.16);
+
+  /* Status Colors */
+  --status-pending:    #CC9200;
+  --status-approved:   #0099BB;
+  --status-processing: #0077CC;
+  --status-ready:      #00A86B;
+  --status-done:       #6E6E8A;
+  --status-cancelled:  #CC006A;
+  --status-delivered:  #7B2FBE;
+
+  /* Status Backgrounds */
+  --status-pending-bg:    rgba(204,146,0,0.10);
+  --status-approved-bg:   rgba(0,153,187,0.10);
+  --status-processing-bg: rgba(0,119,204,0.10);
+  --status-ready-bg:      rgba(0,168,107,0.10);
+  --status-done-bg:       rgba(110,110,138,0.10);
+  --status-cancelled-bg:  rgba(204,0,106,0.10);
+
+  /* Gradients */
+  --grad-brand:    linear-gradient(135deg, var(--cyan) 0%, var(--magenta) 100%);
+  --grad-cyan:     linear-gradient(135deg, #00B4D8 0%, #0099BB 100%);
+  --grad-warm:     linear-gradient(135deg, var(--magenta) 0%, #FF6B35 100%);
+  --grad-surface:  linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
+
+  /* Typography */
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Font Sizes */
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+  --text-5xl:  3rem;      /* 48px */
+  --text-6xl:  3.75rem;   /* 60px */
+
+  /* Font Weights */
+  --fw-light:   300;
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semibold:600;
+  --fw-bold:    700;
+  --fw-black:   900;
+
+  /* Line Heights */
+  --lh-tight:  1.25;
+  --lh-snug:   1.375;
+  --lh-normal: 1.5;
+  --lh-relaxed:1.625;
+
+  /* Spacing Scale */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Border Radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:    cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-base:   220ms;
+  --dur-slow:   380ms;
+  --dur-xslow:  600ms;
+
+  /* Z-index Scale */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-overlay: 100;
+  --z-modal:   200;
+  --z-toast:   300;
+  --z-tooltip: 400;
+
+  /* Layout */
+  --max-w-xs:  360px;
+  --max-w-sm:  480px;
+  --max-w-md:  640px;
+  --max-w-lg:  768px;
+  --max-w-xl:  1024px;
+  --max-w-2xl: 1280px;
+
+  /* Header */
+  --header-h: 64px;
+}
+
+/* ─────────────────────────────────────────────
+   DARK MODE
+───────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* CMYK Brand — brighter on dark */
+  --cyan:       #00C2E0;
+  --magenta:    #E8007D;
+  --yellow:     #FFD600;
+  --key:        #F0F0F5;
+
+  --cyan-10:    rgba(0, 194, 224, 0.12);
+  --cyan-20:    rgba(0, 194, 224, 0.22);
+  --magenta-10: rgba(232, 0, 125, 0.12);
+  --magenta-20: rgba(232, 0, 125, 0.22);
+  --yellow-10:  rgba(255, 214, 0, 0.12);
+
+  --bg:         #0D0D0F;
+  --bg-alt:     #111116;
+  --surface:    #18181F;
+  --surface-2:  #22222C;
+  --surface-3:  #2C2C38;
+
+  --text:       #F0F0F5;
+  --text-muted: #8888A8;
+  --text-faint: #55556A;
+
+  --border:     rgba(255, 255, 255, 0.07);
+  --border-md:  rgba(255, 255, 255, 0.12);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.5);
+  --shadow-xl:  0 16px 48px rgba(0,0,0,0.6);
+
+  --status-pending:    #FFB800;
+  --status-approved:   #00C2E0;
+  --status-processing: #4DA6FF;
+  --status-ready:      #00D68F;
+  --status-done:       #8888A8;
+  --status-cancelled:  #E8007D;
+  --status-delivered:  #A855F7;
+
+  --status-pending-bg:    rgba(255,184,0,0.12);
+  --status-approved-bg:   rgba(0,194,224,0.12);
+  --status-processing-bg: rgba(77,166,255,0.12);
+  --status-ready-bg:      rgba(0,214,143,0.12);
+  --status-done-bg:       rgba(136,136,168,0.12);
+  --status-cancelled-bg:  rgba(232,0,125,0.12);
+
+  --grad-surface: linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
+}
+
+/* ─────────────────────────────────────────────
+   BASE RESET & GLOBALS
+───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  color: var(--text);
+  background-color: var(--bg);
+  min-height: 100vh;
+  transition: background-color var(--dur-slow) var(--ease-out),
+              color var(--dur-slow) var(--ease-out);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+
+a {
+  color: var(--cyan);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { opacity: 0.85; }
+
+img, svg { display: block; max-width: 100%; }
+
+button, input, select, textarea {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Scrollbar (WebKit) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-md);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ─────────────────────────────────────────────
+   CMYK DECORATIVE BACKGROUND
+───────────────────────────────────────────── */
+.cmyk-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.cmyk-bg::before,
+.cmyk-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.06;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.cmyk-bg::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--cyan) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+}
+.cmyk-bg::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--magenta) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+}
+[data-theme="dark"] .cmyk-bg::before,
+[data-theme="dark"] .cmyk-bg::after {
+  opacity: 0.12;
+}
