@@ -13,8 +13,8 @@ const STATIC_ASSETS = [
   '/css/components.css',
   '/manifest.json',
   '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap'
+  '/icons/icon-512.png'
+  // Removed Google Fonts from cache - loaded dynamically to avoid CSP issues
 ];
 
 /* ── INSTALL: cache static assets ── */
