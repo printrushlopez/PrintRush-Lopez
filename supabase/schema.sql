@@ -18,11 +18,12 @@ create table if not exists shops (
   owner_phone   text,
   owner_email   text,
   logo_url      text,
-  plan          text not null default 'basic',  -- 'basic' | 'pro'
+  plan          text not null default 'basic',  -- 'basic' | 'pro' | 'premium'
   approval_mode boolean not null default false, -- require owner approval for online jobs
   qr_code_url   text,
   delivery_fee_metro    numeric(10,2) default 80.00,
   delivery_fee_province numeric(10,2) default 150.00,
+  subscription_expires_at timestamptz,
   is_active     boolean not null default true,
   -- Geolocation & Specialties
   lat           float8, -- Latitude
@@ -42,6 +43,17 @@ create table if not exists shop_owners (
   role       text not null default 'owner',    -- 'owner' | 'staff'
   created_at timestamptz not null default now(),
   unique(shop_id, user_id)
+);
+
+-- ============================================================
+-- PLATFORM ADMINS (Super Admin portal)
+-- ============================================================
+create table if not exists platform_admins (
+  id         uuid primary key default uuid_generate_v4(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  role       text not null default 'admin',   -- 'admin' | 'super_admin'
+  created_at timestamptz not null default now(),
+  unique(user_id)
 );
 
 -- ============================================================
@@ -108,15 +120,23 @@ create table if not exists jobs (
 -- PAYMENTS
 -- ============================================================
 create table if not exists payments (
-  id              uuid primary key default uuid_generate_v4(),
-  job_id          uuid not null references jobs(id) on delete cascade,
-  shop_id         uuid not null references shops(id) on delete cascade,
-  amount          numeric(10,2) not null,
-  method          text not null,
-  paymongo_id     text,          -- PayMongo payment intent ID
-  paymongo_status text,
-  paid_at         timestamptz,
-  created_at      timestamptz not null default now()
+  id                      uuid primary key default uuid_generate_v4(),
+  job_id                  uuid not null references jobs(id) on delete cascade,
+  shop_id                 uuid not null references shops(id) on delete cascade,
+  job_token               uuid not null,
+  amount                  numeric(10,2) not null,
+  method                  text not null,
+  provider                text not null default 'sandbox', -- 'sandbox' | 'paymongo'
+  gateway_transaction_id  text,
+  gateway_status          text default 'pending',
+  gateway_response        jsonb,
+  expected_paid_at        timestamptz,
+  is_sandbox              boolean not null default true,
+  paymongo_id             text,
+  paymongo_status         text,
+  paid_at                 timestamptz,
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
 );
 
 -- ============================================================
@@ -136,7 +156,7 @@ create table if not exists inventory (
 );
 
 -- ============================================================
--- DELIVERIES (Shipmates integration)
+-- DELIVERIES (Shipmates integration / sandbox delivery simulation)
 -- ============================================================
 create table if not exists deliveries (
   id                   uuid primary key default uuid_generate_v4(),
@@ -144,14 +164,21 @@ create table if not exists deliveries (
   shop_id              uuid not null references shops(id) on delete cascade,
   shipmates_booking_id text,
   tracking_number      text,
-  courier              text,           -- 'j&t' | 'lbc' | 'ninja_van'
+  courier              text,           -- 'j&t' | 'lbc' | 'ninja_van' | 'sandbox'
+  provider             text not null default 'sandbox',
   status               text default 'pending',
+  stage                text default 'pending',
+  pickup_at            timestamptz,
+  in_transit_at        timestamptz,
+  delivered_at         timestamptz,
+  tracking_url         text,
   estimated_delivery   date,
   pickup_address       text,
   delivery_address     text,
   delivery_city        text,
   cod_amount           numeric(10,2) default 0.00,
   notes                text,
+  is_sandbox           boolean not null default true,
   created_at           timestamptz not null default now(),
   updated_at           timestamptz not null default now()
 );
@@ -214,7 +241,10 @@ create index if not exists idx_jobs_token          on jobs(job_token);
 create index if not exists idx_jobs_fingerprint    on jobs(device_fingerprint);
 create index if not exists idx_jobs_created        on jobs(created_at desc);
 create index if not exists idx_payments_job_id     on payments(job_id);
+create index if not exists idx_payments_job_token  on payments(job_token);
+create index if not exists idx_payments_gateway_status on payments(gateway_status);
 create index if not exists idx_deliveries_job_id   on deliveries(job_id);
+create index if not exists idx_deliveries_stage    on deliveries(stage);
 create index if not exists idx_device_bans_fp      on device_bans(shop_id, fingerprint);
 create index if not exists idx_push_subs_shop      on push_subscriptions(shop_id, sub_type);
 create index if not exists idx_loyalty_fp          on loyalty(shop_id, device_fingerprint);
@@ -261,11 +291,19 @@ create trigger trg_inventory_updated_at
   before update on inventory
   for each row execute function touch_updated_at();
 
+create trigger trg_payments_updated_at
+  before update on payments
+  for each row execute function touch_updated_at();
+
+create trigger trg_deliveries_updated_at
+  before update on deliveries
+  for each row execute function touch_updated_at();
+
 -- ============================================================
 -- ROW LEVEL SECURITY (RLS)
--- ============================================================
 alter table shops             enable row level security;
 alter table shop_owners       enable row level security;
+alter table platform_admins   enable row level security;
 alter table services          enable row level security;
 alter table jobs              enable row level security;
 alter table payments          enable row level security;
@@ -296,6 +334,12 @@ create policy "Anyone can view active shop by slug"
 -- SHOP OWNERS
 create policy "Owners can view their own record"
   on shop_owners for select using (user_id = auth.uid());
+
+-- PLATFORM ADMINS
+create policy "Admins can view their own record"
+  on platform_admins for select using (user_id = auth.uid());
+create policy "Admins can manage their own record"
+  on platform_admins for all using (user_id = auth.uid());
 
 -- SERVICES — anyone can read active services (for order page)
 create policy "Public can view active services"

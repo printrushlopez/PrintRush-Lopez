@@ -43,9 +43,9 @@ You need to create a bucket for uploaded files.
 
 ---
 
-## 3. Edge Functions & API Keys (PayMongo & Shipmates)
+## 3. Edge Functions & Sandbox Integrations
 
-PrintRUSH Lopez uses Supabase Edge Functions to securely process payments and book deliveries without exposing your secret API keys to the browser. You must deploy these functions and set your secrets.
+This project now uses a fully internal sandbox for payments and delivery simulation. That means there is no need for a real Shipmates or PayMongo account to launch a demo.
 
 ### Prerequisites
 1. You must have the Supabase CLI installed on your computer.
@@ -53,44 +53,35 @@ PrintRUSH Lopez uses Supabase Edge Functions to securely process payments and bo
 3. Log in to the CLI: `supabase login`
 4. Link your project: `supabase link --project-ref drgdywiewrvccbvjsswl`
 
-### Step A: Deploy Edge Functions
-Deploy the functions that handle payments and deliveries:
+### Step A: Deploy Sandbox Edge Functions
+Deploy the sandbox functions that handle payments, delivery booking, and status updates:
 ```bash
 supabase functions deploy create-payment
 supabase functions deploy dispatch-delivery
+supabase functions deploy mock-payment-status
+supabase functions deploy delivery-status
 ```
 
-### Step B: Configure Shipmates
-Shipmates requires an API key to book riders (LBC, J&T, etc.).
-1. Create a Shipmates Account (https://shipmates.ph/).
-2. Get your Production API Key from their dashboard.
-3. Save it to your Supabase project securely via CLI:
-```bash
-supabase secrets set SHIPMATES_API_KEY=your_live_shipmates_key_here
-```
+### Step B: Sandbox Payment and Delivery
+- No live `SHIPMATES_API_KEY` is required.
+- No live `PAYMONGO_SECRET_KEY` is required.
+- The platform now stores sandbox `payments` and `deliveries` records in Supabase with simulated timelines.
+- The checkout flow is handled with a local `/payment.html` sandbox experience.
 
-### Step C: Configure PayMongo
-PayMongo requires a Secret Key to create checkout sessions.
-1. Create a PayMongo Account (https://paymongo.com/).
-2. Get your Secret Key (sk_live_... or sk_test_...) from the Developers section.
-3. Save it to your Supabase project securely via CLI:
-```bash
-supabase secrets set PAYMONGO_SECRET_KEY=your_paymongo_secret_key_here
-```
-4. Important: You must also set up a Webhook in the PayMongo Dashboard pointing to your Supabase Edge Function (e.g., https://drgdywiewrvccbvjsswl.supabase.co/functions/v1/paymongo-webhook) so your database knows when an order is actually paid.
-
-### Step D: Configure VAPID (Web Push Notifications)
-VAPID keys are required to send push notifications to browsers without using a third-party service like Firebase.
-1. Generate a VAPID key pair (Public and Private) online (e.g., at https://vapidkeys.com/).
-2. Public Key: Open `js/lib/push.js` and paste your Public Key into the `VAPID_PUBLIC_KEY` variable at the top.
-3. Private Key: Save the Private Key securely to your Supabase project via CLI. *Important: You must deploy the notify-push Edge Function first.*
+### Step C: Optional Real Push Notifications
+Web Push is still optional. If you want notifications in the browser, deploy the `notify-push` function and configure VAPID keys.
+1. Deploy the function:
 ```bash
 supabase functions deploy notify-push
+```
+2. Save the VAPID keys via CLI:
+```bash
 supabase secrets set VAPID_PRIVATE_KEY=your_vapid_private_key_here
 supabase secrets set VAPID_PUBLIC_KEY=your_vapid_public_key_here
 ```
+3. Update `js/lib/push.js` with the public VAPID key.
 
-### Step E: Configure hCaptcha (Anti-Spam)
+### Step D: Configure hCaptcha (Anti-Spam)
 hCaptcha prevents bots from uploading massive files and filling up your storage.
 1. Create a free account at https://www.hcaptcha.com/.
 2. Add a new site (e.g., print-rush-lopez.vercel.app) to get a Sitekey.
@@ -104,7 +95,33 @@ supabase secrets set HCAPTCHA_SECRET=your_hcaptcha_secret_key_here
 
 ---
 
-## 4. Deployment (Vercel)
+## 4. Marketing & Pricing Strategy
+
+This project now supports a tiered plan approach to make sales easier and to align with different shop needs.
+
+### Recommended pricing tiers
+- **Basic** — ₱49 / month
+  - Unlimited print job queue
+  - Order entry + queue board
+  - Manual pickup / walk-in support
+- **Pro** — ₱99 / month
+  - Everything in Basic
+  - Online sandbox payments
+  - Live tracking and notifications
+  - Delivery simulation flow
+- **Premium** — ₱149 / month
+  - Everything in Pro
+  - Admin portal access
+  - Priority queue estimates and analytics
+
+### Growth focus
+- Position the app for campus printing shops and student convenience.
+- Use the sandbox demo flow to show shops the full ordering and delivery experience without requiring live payment or courier contracts.
+- Promote features like "skip the line", "track your print job", and "instant checkout demo." 
+
+---
+
+## 5. Deployment (Vercel)
 
 Since your App URL is already on Vercel, any changes pushed to your GitHub repository will automatically deploy.
 
@@ -112,11 +129,12 @@ Since your App URL is already on Vercel, any changes pushed to your GitHub repos
 
 ---
 
-## 5. Final Checklist for "Fully Published"
+## 6. Final Checklist for "Fully Published"
 
 To be fully operational, ensure you have:
 1. Run the `schema.sql` in Supabase.
-2. Deployed the Edge Functions and set the PayMongo/Shipmates/VAPID secrets via CLI.
+2. Deployed the sandbox Edge Functions and optional push notification function via CLI.
 3. Created your first shop in the database.
 4. Created an owner account at `/owner/login.html` and linked it to your shop in the `shop_owners` table.
-5. Verified the map loads correctly on the landing page.
+5. Verified the sandbox payment flow and delivery timeline simulation.
+6. Verified the map loads correctly on the landing page.

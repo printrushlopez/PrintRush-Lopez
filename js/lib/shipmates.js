@@ -1,13 +1,12 @@
 /**
- * PrintRUSH Lopez — Shipmates Delivery API Integration (Production)
+ * PrintRUSH Lopez — Sandbox Delivery Simulation Library
  */
 
 import { supabase } from './supabase.js';
 
 /**
  * Get available shipping rates for a destination
- * Note: In a full production build, this could also call an Edge Function.
- * For now, we return standard local delivery estimates based on weight.
+ * Note: This returns the same demo delivery estimates currently used in the app.
  */
 export async function getShippingRates(destinationCity, destinationProvince, weightKg = 1) {
   // Simplified flat rates for demonstration in production

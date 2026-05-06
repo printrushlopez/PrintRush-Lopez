@@ -1,17 +1,15 @@
-/* PrintRUSH Lopez — PayMongo Client Library
-   Handles GCash / Maya payment intent creation and polling.
-   Docs: https://developers.paymongo.com/reference/the-payment-intent-object
-   Uses: PayMongo Secret Key (stored in Supabase Edge Function, NOT exposed here)
-   The browser calls a Supabase Edge Function which proxies to PayMongo securely. */
+/* PrintRUSH Lopez — Sandbox Payment Library
+   Simulates GCash / Maya payment flows and status progression.
+   Uses Supabase Edge Functions to store sandbox transactions and move them from pending to paid/failed. */
 
 import { supabase } from './supabase.js';
 
 /**
- * Create a PayMongo GCash or Maya payment intent via Supabase Edge Function.
+ * Create a sandbox payment intent in Supabase.
  * @param {object} opts
  * @param {number}  opts.amount      - Amount in CENTAVOS (e.g. 4500 = ₱45.00)
- * @param {string}  opts.method      - 'gcash' | 'paymaya'
- * @param {string}  opts.jobToken    - PrintRUSH job token (for webhook matching)
+ * @param {string}  opts.method      - 'gcash' | 'maya'
+ * @param {string}  opts.jobToken    - PrintRUSH job token
  * @param {string}  opts.description - Human-readable order description
  * @param {string}  opts.name        - Customer name
  * @returns {{ checkoutUrl: string, paymentIntentId: string } | null}
@@ -24,47 +22,62 @@ export async function createPaymentIntent({ amount, method, jobToken, descriptio
     if (error) throw error;
     return data; // { checkoutUrl, paymentIntentId }
   } catch (err) {
-    console.error('PayMongo createPaymentIntent failed:', err.message);
+    console.error('Sandbox createPaymentIntent failed:', err.message);
     return null;
   }
 }
 
+async function fetchPaymentStatus(jobToken) {
+  try {
+    const { data, error } = await supabase.functions.invoke('mock-payment-status', {
+      body: { jobToken }
+    });
+    if (error) throw error;
+    return data?.status || 'pending';
+  } catch (err) {
+    console.warn('Sandbox payment status check failed:', err.message);
+    return 'pending';
+  }
+}
+
 /**
- * Poll for payment status via Supabase (webhook updates the `payments` table).
- * @param {string} jobToken - Job token to check
- * @param {number} maxWait  - Max milliseconds to wait (default 120000 = 2 min)
+ * Poll for sandbox payment confirmation.
+ * @param {string} jobToken
+ * @param {number} maxWait
  * @returns {'paid' | 'failed' | 'timeout'}
  */
 export async function waitForPayment(jobToken, maxWait = 120_000) {
   return new Promise(resolve => {
-    const start   = Date.now();
-    const channel = supabase.channel(`payment-${jobToken}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'payments',
-        filter: `job_token=eq.${jobToken}`
-      }, payload => {
-        channel.unsubscribe();
-        resolve(payload.new?.status === 'paid' ? 'paid' : 'failed');
-      })
-      .subscribe();
+    const start = Date.now();
+    let settled = false;
 
-    // Timeout fallback
-    setTimeout(() => { channel.unsubscribe(); resolve('timeout'); }, maxWait);
+    const check = async () => {
+      const status = await fetchPaymentStatus(jobToken);
+      if (status === 'paid' || status === 'failed') {
+        if (!settled) {
+          settled = true;
+          resolve(status);
+        }
+      } else if (Date.now() - start > maxWait) {
+        if (!settled) {
+          settled = true;
+          resolve('timeout');
+        }
+      }
+    };
 
-    // Also poll every 5s for reliability
-    const poll = setInterval(async () => {
-      if (Date.now() - start > maxWait) { clearInterval(poll); return; }
-      const { data } = await supabase.from('payments')
-        .select('status').eq('job_token', jobToken).single();
-      if (data?.status === 'paid') { clearInterval(poll); channel.unsubscribe(); resolve('paid'); }
-      if (data?.status === 'failed') { clearInterval(poll); channel.unsubscribe(); resolve('failed'); }
-    }, 5000);
+    check();
+    const interval = setInterval(async () => {
+      await check();
+      if (Date.now() - start > maxWait) {
+        clearInterval(interval);
+      }
+    }, 3000);
   });
 }
 
 /**
- * Redirect the user to the PayMongo checkout URL.
- * Call createPaymentIntent first, then use the returned checkoutUrl.
+ * Redirect the user to the sandbox checkout URL.
  */
 export function redirectToCheckout(checkoutUrl) {
   if (!checkoutUrl) return;

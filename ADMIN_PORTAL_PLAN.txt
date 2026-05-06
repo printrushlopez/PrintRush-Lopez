@@ -1,52 +1,89 @@
-# PrintRUSH Lopez — Admin Portal & Integrations Plan
+# PrintRUSH Lopez — Admin Portal, Sandbox Integrations & Plan Strategy
 
-This plan addresses your request to add a Super Admin Portal to manage shops easily without using the Supabase SQL editor, and provides deep insights into how PayMongo and Shipmates are currently implemented.
+This document captures the current refactor direction for the admin portal and the new sandbox replacements for PayMongo and Shipmates.
 
-## Deep Think: Super Admin Portal
+## 1. Admin Portal Strategy
 
-Creating shops manually in the database is indeed tedious. A dedicated **Super Admin Portal** is the standard SaaS solution.
+A Super Admin Portal is the right approach to manage multiple shops without touching the Supabase SQL Editor.
 
-### Proposed Architecture for Admin Portal
+### Architecture
 
-1.  **Authentication & Roles**: 
-    - We will create a new table `platform_admins` linked to Supabase Auth.
-    - An admin logs in at a secure route: `/admin/login.html`.
-    - Only users existing in `platform_admins` can access the `/admin/dashboard.html`.
+- **Authentication & Roles**
+  - Add a `platform_admins` table linked to `auth.users`.
+  - Admins log in at `/admin/login.html`.
+  - Access to `/admin/dashboard.html` is limited to users in `platform_admins`.
+- **Shop & Subscription Management**
+  - Shop list with `active/inactive` toggle, plan assignment, and subscription renewal dates.
+  - Add/edit shop details such as name, address, delivery fees, and plan tier.
+  - Add `subscription_expires_at` to the `shops` schema for renewal tracking.
+- **System Health & Logs**
+  - Display recent payment simulation events and delivery booking status.
+  - Add a live error feed for sandbox flow failures.
+- **Admin Management**
+  - Invite and manage Super Admins from the portal.
+  - Role support for `admin` and `super_admin`.
 
-2.  **Dashboard Content (Features)**:
-    - **Overview Metric Cards**: Total active shops, total platform revenue, total jobs processed this month.
-    - **Shop Management Table**: A list of all shops where you can click "Add New Shop", edit details (name, address, delivery fees), and toggle them Active/Inactive. Adding a shop here will automatically generate the `Shop ID` and assign the initial owner.
-    - **Subscription Monitor**: A tab to view which shops are on the `basic` vs `pro` plan, and their subscription renewal dates (we will add a `subscription_expires_at` column to the `shops` table).
-    - **Admin Management**: A simple form to invite other Super Admins by email.
-    - **System Health**: A live feed of error logs (e.g., if a Shipmates delivery fails to book).
+## 2. Sandbox Payment + Delivery Simulation
 
-## PayMongo & Shipmates: Current Implementation
+We are replacing real Shipmates/PayMongo dependencies with a fully internal sandbox that:
 
-Both are **truly implemented** in the architecture, but they rely on **Supabase Edge Functions** to keep your API keys secure. You cannot put secret keys in the frontend JavaScript, or hackers will steal them.
+- mimics the same API flow structures, but never calls external APIs
+- stores payments, orders, and delivery records in Supabase
+- simulates payment states (`pending → paid / failed`)
+- simulates delivery stages (`pending → picked_up → in_transit → delivered`)
+- uses timestamp-driven progression for realistic timelines
 
-1.  **PayMongo**: 
-    - **How it works**: When a customer selects GCash, `js/lib/paymongo.js` sends a request to your Supabase server. A secure Edge Function (`create-payment`) talks to PayMongo, generates a checkout link, and sends it back to the customer.
-    - **Setup needed**: You need a PayMongo Secret Key and must configure a Webhook in the PayMongo dashboard to tell Supabase when the customer actually pays.
-2.  **Shipmates**:
-    - **How it works**: When a shop owner clicks "Dispatch" on the Queue Board, `js/lib/shipmates.js` calls the `dispatch-delivery` Edge Function. This function uses your `SHIPMATES_API_KEY` to book a rider and saves the tracking number to the database.
+### Implementation Highlights
 
-## Proposed Changes to Implement Admin Portal
+- `create-payment` Edge Function now creates a sandbox payment record and returns a local checkout URL.
+- `mock-payment-status` Edge Function advances sandbox payments based on `expected_paid_at`.
+- `dispatch-delivery` Edge Function now creates a mock delivery booking with tracking, timeline milestones, and a simulated courier.
+- `delivery-status` Edge Function keeps delivery stage progression in sync when customers open tracking.
 
-### 1. Database Updates
-- [MODIFY] supabase/schema.sql
-- Add `platform_admins` table.
-- Add `subscription_expires_at` to the `shops` table.
+## 3. Plan Options & Marketing Positioning
 
-### 2. Admin Frontend
-- [NEW] admin/login.html & admin/dashboard.html
-- Build the secure UI for Super Admins.
-- [NEW] js/admin/dashboard.js
-- Logic to fetch shops, add shops, and manage subscriptions via Supabase JS.
+Your app should have more than one plan. Here’s a simple SaaS tier strategy for PrintRUSH Lopez:
 
-### 3. Setup Guide Expansion
-- [MODIFY] SETUP_GUIDE.txt
-- Add commands on how to set up the first Super Admin.
+- **Basic** — ₱49 / month
+  - Unlimited job queue
+  - Order capture and queue board
+  - Manual pickup/walk-in support
+- **Pro** — ₱99 / month
+  - Everything in Basic
+  - Online GCash/Maya payments
+  - Live order tracking
+  - Delivery simulation
+- **Premium** — ₱149 / month
+  - Everything in Pro
+  - Priority job estimates
+  - Admin portal access
+  - Advanced analytics and plans dashboard
 
-## Next Steps
+## 4. Marketing Research & Growth Playbook
 
-If you approve this plan, I will immediately begin coding the `platform_admins` database update and building the `/admin/` portal!
+Focus on campus and small local shops that need fast, low-touch printing operations.
+
+### Value proposition
+
+- “Skip the line and track your prints from your phone”
+- “Local Lopez print shops get instant online orders and a real-time queue dashboard”
+- “No real payment gateway setup required for demos — the system works instantly with sandbox simulation.”
+
+### Key channels
+
+- Facebook / Meta ads targeting Lopez students, campus groups, and barangay small business owners.
+- Instagram Reels showing the “order → print → pickup” flow.
+- Collaboration with campus organizations and local shops to place QR codes in high foot-traffic spots.
+
+### Conversion hooks
+
+- Free 7-day trial for new shops
+- Demo mode for students and shop owners
+- Case study messaging like “Reduce student queue time by 80%”
+
+## 5. Next Steps
+
+- Finalize the `platform_admins` schema and admin portal UI.
+- Deploy sandbox payment/delivery functions.
+- Publish pricing tier copy in the landing page and setup guide.
+- Use the admin portal to onboard new shops and track plan subscriptions.

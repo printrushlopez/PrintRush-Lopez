@@ -16,6 +16,11 @@ const LOPEZ_BOUNDS = [
 async function init() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
+  if (!window.L) {
+    console.error('Leaflet did not load. Map cannot initialize.');
+    mapEl.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:var(--text-sm);">Map library failed to load. Please check your internet connection or refresh the page.</div>';
+    return;
+  }
 
   // Initialize Map (Centered on Lopez, Quezon)
   map = L.map('map', {
@@ -137,7 +142,7 @@ async function loadShops(lat, lng) {
       return;
     }
 
-    allShops = (data || []).map(s => ({
+    allShops = (data || []).filter(s => s.lat && s.lng).map(s => ({
       ...s,
       distance_meters: calculateDistance(lat, lng, s.lat, s.lng)
     })).sort((a, b) => a.distance_meters - b.distance_meters);
@@ -202,6 +207,13 @@ function renderShops() {
       </div>
     `;
   }).join('');
+
+  if (shopMarkers.length) {
+    const bounds = L.featureGroup(shopMarkers).getBounds();
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.2));
+    }
+  }
 
   if (window.lucide) window.lucide.createIcons();
 }

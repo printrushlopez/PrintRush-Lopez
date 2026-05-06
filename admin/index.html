@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Platform Admin Access — PrintRUSH Lopez</title>
+<meta name="description" content="Hidden platform admin login for PrintRUSH Lopez." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/css/tokens.css" />
+<link rel="stylesheet" href="/css/components.css" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+<main class="owner-login-wrap">
+  <div class="owner-login-card">
+    <div class="owner-login-logo">
+      <a href="/" class="logo" style="justify-content:center;">
+        <div class="cmyk-mark" aria-hidden="true">
+          <div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div>
+        </div>
+        <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
+      </a>
+    </div>
+
+    <h1 class="owner-login-title">Platform Admin Portal</h1>
+    <p class="owner-login-sub">Hidden access for platform-level administrators only. Use the secret admin access code to sign in.</p>
+
+    <div id="secretNotice" style="display:none;background:var(--yellow-10);border:1px solid var(--yellow);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);font-size:var(--text-xs);color:var(--text);">
+      <strong>🔒 Hidden admin access</strong> — This portal is protected by a secret query code. If you opened this page without the code, use the hidden easter egg entry point on the public home page footer.
+    </div>
+
+    <form id="adminLoginForm" novalidate>
+      <div class="form-group" style="margin-bottom:var(--space-4);">
+        <label class="form-label" for="loginEmail">Email Address</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="admin@printrush.ph" autocomplete="email" required />
+        <div class="field-error" id="emailErr" style="display:none;"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-6);">
+        <label class="form-label" for="loginPassword">Password</label>
+        <div style="position:relative;">
+          <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required style="padding-right:48px;" />
+          <button type="button" id="togglePw" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);" aria-label="Show password">
+            <span class="icon icon-sm"><i data-lucide="eye"></i></span>
+          </button>
+        </div>
+        <div class="field-error" id="passErr" style="display:none;"></div>
+      </div>
+      <div id="loginErr" class="field-error" style="display:none;margin-bottom:var(--space-4);text-align:center;"></div>
+      <button class="btn btn-primary btn-lg" type="submit" id="loginBtn" style="width:100%;" title="Sign in using a platform admin account">
+        <span class="icon icon-sm"><i data-lucide="log-in"></i></span>
+        Sign In
+      </button>
+    </form>
+
+    <div style="margin-top:var(--space-5);text-align:center;font-size:var(--text-xs);color:var(--text-muted);">
+      <p>This login is only for accounts registered in <code>platform_admins</code> within Supabase.</p>
+      <a href="/" style="color:var(--cyan);text-decoration:none;">Return to public site</a>
+    </div>
+  </div>
+</main>
+
+<script>
+const root = document.documentElement;
+const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+root.setAttribute('data-theme', saved);
+</script>
+<script type="module">
+import { supabase } from '/js/lib/supabase.js';
+import { isConfigured } from '/js/config.js';
+import { ADMIN_SECRET_KEY, ADMIN_SECRET_VALUE, isAdminSecretValid, checkSignedInPlatformAdmin } from '/js/admin/auth.js';
+
+const secretNotice = document.getElementById('secretNotice');
+const validSecret = isAdminSecretValid();
+
+if (!validSecret) {
+  secretNotice.style.display = 'block';
+  document.getElementById('adminLoginForm').style.display = 'none';
+}
+
+if (!isConfigured()) {
+  document.getElementById('loginErr').textContent = 'Supabase is not configured. Please set your credentials in js/config.js first.';
+  document.getElementById('loginErr').style.display = 'block';
+}
+
+async function maybeRedirectIfLoggedIn() {
+  if (!validSecret || !isConfigured()) return;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user?.id) {
+    const admin = await checkSignedInPlatformAdmin();
+    if (admin) {
+      window.location.href = `/admin/dashboard.html?${ADMIN_SECRET_KEY}=${encodeURIComponent(ADMIN_SECRET_VALUE)}`;
+    }
+  }
+}
+maybeRedirectIfLoggedIn();
+
+const loginForm = document.getElementById('adminLoginForm');
+const loginBtn = document.getElementById('loginBtn');
+
+function showFieldErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (!validSecret) return;
+
+  document.getElementById('emailErr').style.display = 'none';
+  document.getElementById('passErr').style.display = 'none';
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display = 'none';
+
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email) { showFieldErr('emailErr', 'Email is required'); return; }
+  if (!password) { showFieldErr('passErr', 'Password is required'); return; }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Signing in…';
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = '<span class="icon icon-sm"><i data-lucide="log-in"></i></span> Sign In';
+    if (window.lucide) window.lucide.createIcons();
+    errEl.textContent = error.message || 'Login failed. Please try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const admin = await checkSignedInPlatformAdmin();
+  if (!admin) {
+    await supabase.auth.signOut();
+    errEl.textContent = 'Access denied. Your account is not registered as a platform admin.';
+    errEl.style.display = 'block';
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = '<span class="icon icon-sm"><i data-lucide="log-in"></i></span> Sign In';
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  window.location.href = `/admin/dashboard.html?${ADMIN_SECRET_KEY}=${encodeURIComponent(ADMIN_SECRET_VALUE)}`;
+});
+
+const togglePw = document.getElementById('togglePw');
+togglePw.addEventListener('click', () => {
+  const input = document.getElementById('loginPassword');
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  togglePw.innerHTML = `<span class="icon icon-sm"><i data-lucide="${isHidden ? 'eye-off' : 'eye'}"></i></span>`;
+  if (window.lucide) window.lucide.createIcons();
+});
+</script>
+</body>
+</html>

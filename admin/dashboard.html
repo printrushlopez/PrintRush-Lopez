@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-PH" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Platform Admin Dashboard — PrintRUSH Lopez</title>
+<meta name="description" content="Hidden platform admin dashboard for PrintRUSH Lopez." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/css/tokens.css" />
+<link rel="stylesheet" href="/css/components.css" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div class="cmyk-bg" aria-hidden="true"></div>
+<main class="page page-content" style="padding-top:var(--space-10);">
+  <div class="container" style="max-width:1000px;">
+    <header style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-6);">
+      <div>
+        <a href="/" class="logo" style="display:flex;align-items:center;gap:var(--space-3);text-decoration:none;color:inherit;">
+          <div class="cmyk-mark" aria-hidden="true"><div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div></div>
+          <div class="logo-text"><span>PrintRUSH</span> Lopez Admin</div>
+        </a>
+        <p style="margin-top:var(--space-3);color:var(--text-muted);max-width:640px;">Private platform administration portal. Only users registered in the Supabase <code>platform_admins</code> table can access this page.</p>
+      </div>
+      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-outline" id="signOutBtn" type="button">Sign out</button>
+        <a class="btn btn-primary" id="ownerPortalBtn" href="/owner/login.html">Open Owner Portal</a>
+      </div>
+    </header>
+
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-6);">
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+          <div>
+            <h2 style="margin:0;font-size:var(--text-xl);">Shops</h2>
+            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Active shops in the database</p>
+          </div>
+          <span class="badge badge-cyan" id="shopCount">—</span>
+        </div>
+        <p style="margin:0;color:var(--text-faint);">This count is loaded directly from Supabase and reflects <code>shops</code> records.</p>
+      </article>
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+          <div>
+            <h2 style="margin:0;font-size:var(--text-xl);">Platform Admins</h2>
+            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Supabase <code>platform_admins</code> users</p>
+          </div>
+          <span class="badge badge-magenta" id="adminCount">—</span>
+        </div>
+        <p style="margin:0;color:var(--text-faint);">Only accounts in this table are allowed to enter this dashboard.</p>
+      </article>
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+          <div>
+            <h2 style="margin:0;font-size:var(--text-xl);">Live Jobs</h2>
+            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Total queue records</p>
+          </div>
+          <span class="badge badge-yellow" id="jobCount">—</span>
+        </div>
+        <p style="margin:0;color:var(--text-faint);">Counts jobs across all shops for platform oversight.</p>
+      </article>
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+          <div>
+            <h2 style="margin:0;font-size:var(--text-xl);">Payments</h2>
+            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Payments stored in Supabase</p>
+          </div>
+          <span class="badge badge-cyan" id="paymentCount">—</span>
+        </div>
+        <p style="margin:0;color:var(--text-faint);">Shows total payment entries, useful for system audit.</p>
+      </article>
+    </section>
+
+    <section class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin-top:0;font-size:var(--text-xl);">Admin Actions</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);">
+        <button class="btn btn-primary" id="refreshBtn" type="button" title="Reload platform statistics from Supabase">Refresh stats</button>
+        <button class="btn btn-outline" id="routeAuditBtn" type="button" title="Show a verified route audit for the static site and admin portal">Verify routes</button>
+      </div>
+      <div id="auditReport" style="margin-top:var(--space-4);color:var(--text-muted);font-size:var(--text-sm);line-height:1.7;"></div>
+    </section>
+
+    <section class="card">
+      <h3 style="margin-top:0;font-size:var(--text-xl);">System notes</h3>
+      <ul style="margin:var(--space-3) 0 0;padding-left:1.2rem;color:var(--text-muted);font-size:var(--text-sm);line-height:1.8;">
+        <li>The admin portal is hidden and requires the correct <code>code</code> query parameter.</li>
+        <li>Only users present in <code>platform_admins</code> may access this dashboard.</li>
+        <li>The landing page map uses the same Supabase connection and falls back to active shops if the geolocation RPC is unavailable.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+const root = document.documentElement;
+const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+root.setAttribute('data-theme', saved);
+</script>
+<script type="module" src="/js/admin/dashboard.js"></script>
+</body>
+</html>

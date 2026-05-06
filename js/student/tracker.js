@@ -80,6 +80,13 @@ function renderJob(job) {
     job.job_status === 'cancelled'? 'Order cancelled' :
     wait > 0 ? `~${wait} min estimated wait` : 'Calculating wait…';
 
+  if (job.deliveries?.length) {
+    const delivery = job.deliveries[0];
+    const deliveryStage = delivery.stage || delivery.status;
+    document.getElementById('deliveryStage').textContent = `Delivery: ${deliveryStage.replace('_', ' ')}`;
+    document.getElementById('deliveryEta').textContent = delivery.delivered_at ? fmtTime(delivery.delivered_at) : 'Simulated timeline active';
+  }
+
   if (window.lucide) window.lucide.createIcons();
 
   // Show push button if supported and not already granted
@@ -115,13 +122,32 @@ async function loadJob(token) {
   }
   const { data: job, error } = await supabase
     .from('jobs')
-    .select('id,job_number,job_status,job_token,estimated_minutes,estimated_price,created_at,updated_at,shops(id,name,slug)')
+    .select('id,job_number,job_status,job_token,estimated_minutes,estimated_price,created_at,updated_at,shops(id,name,slug),deliveries(*)')
     .eq('job_token', token)
     .single();
   if (error || !job) {
     document.getElementById('noJob').style.display = 'block';
     return;
   }
+
+  if (job.deliveries?.length) {
+    try {
+      await supabase.functions.invoke('delivery-status', {
+        body: { jobId: job.id }
+      });
+      const { data: refreshed, error: refreshErr } = await supabase
+        .from('jobs')
+        .select('id,job_number,job_status,job_token,estimated_minutes,estimated_price,created_at,updated_at,shops(id,name,slug),deliveries(*)')
+        .eq('job_token', token)
+        .single();
+      if (!refreshErr && refreshed) {
+        job = refreshed;
+      }
+    } catch (e) {
+      console.warn('Delivery status sync failed:', e?.message || e);
+    }
+  }
+
   renderJob(job);
   fetchPosition(job.shops.id, job.job_number);
 
