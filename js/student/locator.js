@@ -9,20 +9,92 @@ let currentFilter = 'all';
 
 async function ensureLeaflet() {
   if (window.L) return;
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[src*="leaflet"]');
-    if (existing) {
-      existing.addEventListener('load', resolve);
-      existing.addEventListener('error', () => reject(new Error('Leaflet script failed to load')));
-      return;
+
+  const existingScript = document.querySelector('script[src*="leaflet"]');
+  if (existingScript) {
+    if (window.L) return;
+    if (existingScript.readyState === 'complete' || existingScript.readyState === 'loaded') {
+      if (window.L) return;
     }
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener('load', resolve);
+      existingScript.addEventListener('error', () => reject(new Error('Leaflet script failed to load')));
+    });
+  }
+
+  return new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
     script.async = false;
-    script.onload = resolve;
+    script.onload = () => resolve();
     script.onerror = () => reject(new Error('Leaflet script failed to load'));
     document.head.appendChild(script);
   });
+}
+
+function ensureLeafletCss() {
+  const existing = document.querySelector('link[href*="leaflet.css"]');
+  if (existing) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+  document.head.appendChild(link);
+}
+
+function setShopListMessage(message, withRetry = false) {
+  const listEl = document.getElementById('geoShopList');
+  if (!listEl) return;
+  listEl.innerHTML = `
+    <div style="text-align:center;padding:24px;color:var(--text-muted);">
+      <p style="margin-bottom:16px;">${message}</p>
+      ${withRetry ? '<button id="retryShopsBtn" class="btn btn-primary btn-sm">Retry locating shops</button>' : ''}
+    </div>
+  `;
+  if (withRetry) {
+    const retry = document.getElementById('retryShopsBtn');
+    if (retry) retry.addEventListener('click', () => {
+      requestLocationAndLoadShops();
+    });
+  }
+}
+
+function setShopListLoading() {
+  const listEl = document.getElementById('geoShopList');
+  if (!listEl) return;
+  listEl.innerHTML = `
+    <div style="text-align:center;padding:24px;color:var(--text-muted);">
+      <span class="icon icon-lg spin" style="display:block;margin:0 auto 16px;"><i data-lucide="loader"></i></span>
+      <p>Locating shops and loading the map...</p>
+    </div>
+  `;
+}
+
+function requestLocationAndLoadShops() {
+  setShopListLoading();
+  if (!navigator.geolocation) {
+    loadShops(LOPEZ_CENTER[0], LOPEZ_CENTER[1]);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      const isInside = latitude >= LOPEZ_BOUNDS[0][0] && latitude <= LOPEZ_BOUNDS[1][0] &&
+                       longitude >= LOPEZ_BOUNDS[0][1] && longitude <= LOPEZ_BOUNDS[1][1];
+      if (isInside) {
+        updateUserLocation(latitude, longitude);
+        loadShops(latitude, longitude);
+      } else {
+        console.warn('User outside Lopez. Using Lopez center for shop search.');
+        updateUserLocation(latitude, longitude, false);
+        loadShops(LOPEZ_CENTER[0], LOPEZ_CENTER[1]);
+      }
+    },
+    () => {
+      console.warn('Geolocation denied or failed. Using default Lopez center.');
+      loadShops(LOPEZ_CENTER[0], LOPEZ_CENTER[1]);
+    },
+    { timeout: 5000 }
+  );
 }
 
 const LOPEZ_CENTER = [13.8833, 122.2667];
@@ -42,6 +114,9 @@ async function init() {
     mapEl.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:var(--text-sm);">Map library failed to load. Please check your internet connection or refresh the page.</div>';
     return;
   }
+
+  // Ensure Leaflet CSS is present before rendering the map.
+  ensureLeafletCss();
 
   // Initialize Map (Centered on Lopez, Quezon)
   map = L.map('map', {
@@ -86,32 +161,8 @@ async function init() {
     return;
   }
 
-  // Get User Location
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const isInside = latitude >= LOPEZ_BOUNDS[0][0] && latitude <= LOPEZ_BOUNDS[1][0] &&
-                         longitude >= LOPEZ_BOUNDS[0][1] && longitude <= LOPEZ_BOUNDS[1][1];
-        
-        if (isInside) {
-          updateUserLocation(latitude, longitude);
-          loadShops(latitude, longitude);
-        } else {
-          console.warn('User outside Lopez. Using Lopez center for shop search.');
-          updateUserLocation(latitude, longitude, false); // Add marker but don't pan
-          loadShops(LOPEZ_CENTER[0], LOPEZ_CENTER[1]);
-        }
-      },
-      () => {
-        console.warn('Geolocation denied or failed. Using default Lopez center.');
-        loadShops(LOPEZ_CENTER[0], LOPEZ_CENTER[1]);
-      },
-      { timeout: 5000 }
-    );
-  } else {
-    loadShops(LOPEZ_CENTER[0], LOPEZ_CENTER[1]);
-  }
+  // Get User Location and load shops; show retry button if needed.
+  requestLocationAndLoadShops();
 
   // Specialty Filters
   document.querySelectorAll('#specialtyFilters .chip').forEach(chip => {
@@ -159,7 +210,7 @@ async function loadShops(lat, lng) {
     
     if (error) {
       console.error('Fallback also failed:', error);
-      document.getElementById('geoShopList').innerHTML = '<p style="color:var(--magenta);padding:20px;">Failed to load nearby shops. Please check your connection.</p>';
+      setShopListMessage('Failed to load nearby shops. Please check your connection.', true);
       return;
     }
 
@@ -201,7 +252,14 @@ function renderShops() {
     : allShops.filter(s => s.specialties && s.specialties.includes(currentFilter));
 
   if (filtered.length === 0) {
-    listEl.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-faint);">No shops found in this category.</div>';
+    listEl.innerHTML = `
+      <div style="text-align:center;padding:24px;color:var(--text-muted);">
+        <p style="margin-bottom:16px;">No shops found in this category.</p>
+        <button id="retryShopsBtn" class="btn btn-primary btn-sm">Retry search</button>
+      </div>
+    `;
+    const retry = document.getElementById('retryShopsBtn');
+    if (retry) retry.addEventListener('click', () => requestLocationAndLoadShops());
     return;
   }
 
