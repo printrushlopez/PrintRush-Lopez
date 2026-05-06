@@ -24,7 +24,7 @@ async function ensureLeaflet() {
 
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.async = false;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('Leaflet script failed to load'));
@@ -37,7 +37,7 @@ function ensureLeafletCss() {
   if (existing) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
   document.head.appendChild(link);
 }
 
