@@ -99,8 +99,8 @@ function requestLocationAndLoadShops() {
 
 const LOPEZ_CENTER = [13.8833, 122.2667];
 const LOPEZ_BOUNDS = [
-  [13.718, 122.172], // Southwest
-  [13.991, 122.400]  // Northeast
+  [13.5, 122.0],   // Southwest (expanded)
+  [14.2, 122.6]    // Northeast (expanded)
 ];
 
 async function init() {
