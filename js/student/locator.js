@@ -7,6 +7,24 @@ let shopMarkers = [];
 let allShops = [];
 let currentFilter = 'all';
 
+async function ensureLeaflet() {
+  if (window.L) return;
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src*="leaflet"]');
+    if (existing) {
+      existing.addEventListener('load', resolve);
+      existing.addEventListener('error', () => reject(new Error('Leaflet script failed to load')));
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+    script.async = false;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Leaflet script failed to load'));
+    document.head.appendChild(script);
+  });
+}
+
 const LOPEZ_CENTER = [13.8833, 122.2667];
 const LOPEZ_BOUNDS = [
   [13.718, 122.172], // Southwest
@@ -16,8 +34,11 @@ const LOPEZ_BOUNDS = [
 async function init() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
-  if (!window.L) {
-    console.error('Leaflet did not load. Map cannot initialize.');
+
+  try {
+    await ensureLeaflet();
+  } catch (err) {
+    console.error('Leaflet did not load. Map cannot initialize.', err);
     mapEl.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:var(--text-sm);">Map library failed to load. Please check your internet connection or refresh the page.</div>';
     return;
   }
