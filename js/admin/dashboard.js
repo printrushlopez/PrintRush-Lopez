@@ -77,4 +77,73 @@ if (signOutBtn) {
   });
 }
 
+const createShopForm = document.getElementById('createShopForm');
+const shopMessage = document.getElementById('shopMessage');
+const promoteAdminForm = document.getElementById('promoteAdminForm');
+const promoteMessage = document.getElementById('promoteMessage');
+
+if (createShopForm) {
+  createShopForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('createShopBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+    shopMessage.textContent = '';
+    shopMessage.style.color = 'inherit';
+
+    const payload = {
+      name: document.getElementById('shopName').value,
+      slug: document.getElementById('shopSlug').value,
+      address: document.getElementById('shopAddress').value,
+      lat: parseFloat(document.getElementById('shopLat').value),
+      lng: parseFloat(document.getElementById('shopLng').value),
+      is_active: true
+    };
+
+    const { data, error } = await supabase.from('shops').insert([payload]).select();
+
+    if (error) {
+      shopMessage.textContent = `Error: ${error.message}`;
+      shopMessage.style.color = 'var(--magenta)';
+    } else {
+      shopMessage.textContent = `Success! Shop created with ID: ${data[0].id}. You can now link an owner to this shop.`;
+      shopMessage.style.color = 'var(--cyan)';
+      createShopForm.reset();
+      loadAdminStats();
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<span class="icon icon-sm"><i data-lucide="plus-circle"></i></span> Create New Shop';
+    if (window.lucide) window.lucide.createIcons();
+  });
+}
+
+if (promoteAdminForm) {
+  promoteAdminForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('promoteBtn');
+    const userId = document.getElementById('promoteUserId').value.trim();
+    if (!userId) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Promoting…';
+    promoteMessage.textContent = '';
+    promoteMessage.style.color = 'inherit';
+
+    const { error } = await supabase.from('platform_admins').insert([{ user_id: userId, role: 'admin' }]);
+
+    if (error) {
+      promoteMessage.textContent = `Error: ${error.message}`;
+      promoteMessage.style.color = 'var(--magenta)';
+    } else {
+      promoteMessage.textContent = 'User successfully promoted to Platform Admin!';
+      promoteMessage.style.color = 'var(--cyan)';
+      promoteAdminForm.reset();
+      loadAdminStats();
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<span class="icon icon-sm"><i data-lucide="shield-check"></i></span> Promote to Admin';
+    if (window.lucide) window.lucide.createIcons();
+  });
+}
+
 loadAdminStats();

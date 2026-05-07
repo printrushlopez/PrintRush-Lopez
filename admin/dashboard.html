@@ -73,9 +73,55 @@
     </section>
 
     <section class="card" style="margin-bottom:var(--space-6);">
-      <h3 style="margin-top:0;font-size:var(--text-xl);">Admin Actions</h3>
+      <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Shop Management</h3>
+      <form id="createShopForm" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label" for="shopName">Shop Name</label>
+          <input class="form-input" type="text" id="shopName" placeholder="PrintRUSH Lopez Main" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="shopSlug">Slug (URL identifier)</label>
+          <input class="form-input" type="text" id="shopSlug" placeholder="printrush-main" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="shopAddress">Address</label>
+          <input class="form-input" type="text" id="shopAddress" placeholder="Lopez, Quezon" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="shopLat">Latitude</label>
+          <input class="form-input" type="number" id="shopLat" step="any" placeholder="13.8833" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="shopLng">Longitude</label>
+          <input class="form-input" type="number" id="shopLng" step="any" placeholder="122.2667" required />
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <button class="btn btn-primary" type="submit" id="createShopBtn" style="width:100%;">
+            <span class="icon icon-sm"><i data-lucide="plus-circle"></i></span>
+            Create New Shop
+          </button>
+        </div>
+      </form>
+      <div id="shopMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Admin Promotion</h3>
+      <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-4);">Enter the User ID of a registered account to promote them to Platform Admin.</p>
+      <form id="promoteAdminForm" style="display:flex;gap:var(--space-3);flex-wrap:wrap;">
+        <input class="form-input" type="text" id="promoteUserId" placeholder="User UUID from Supabase Auth" required style="flex:1;min-width:280px;" />
+        <button class="btn btn-outline" type="submit" id="promoteBtn">
+          <span class="icon icon-sm"><i data-lucide="shield-check"></i></span>
+          Promote to Admin
+        </button>
+      </form>
+      <div id="promoteMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin-top:0;font-size:var(--text-xl);">Platform Insights</h3>
       <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);">
-        <button class="btn btn-primary" id="refreshBtn" type="button" title="Reload platform statistics from Supabase">Refresh stats</button>
+        <button class="btn btn-outline" id="refreshBtn" type="button" title="Reload platform statistics from Supabase">Refresh stats</button>
         <button class="btn btn-outline" id="routeAuditBtn" type="button" title="Show a verified route audit for the static site and admin portal">Verify routes</button>
       </div>
       <div id="auditReport" style="margin-top:var(--space-4);color:var(--text-muted);font-size:var(--text-sm);line-height:1.7;"></div>
@@ -86,6 +132,7 @@
       <ul style="margin:var(--space-3) 0 0;padding-left:1.2rem;color:var(--text-muted);font-size:var(--text-sm);line-height:1.8;">
         <li>The admin portal is hidden and requires the correct <code>code</code> query parameter.</li>
         <li>Only users present in <code>platform_admins</code> may access this dashboard.</li>
+        <li>Use the <strong>Shop Management</strong> form above to create shops without using the SQL editor.</li>
         <li>The landing page map uses the same Supabase connection and falls back to active shops if the geolocation RPC is unavailable.</li>
       </ul>
     </section>

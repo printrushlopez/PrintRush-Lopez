@@ -8,30 +8,27 @@ You must initialize your database schema and create your first shop.
 
 ### Step A: Initialize Schema
 1. Log in to your Supabase Dashboard (https://supabase.com/dashboard).
-2. Go to your project (drgdywiewrvccbvjsswl).
+2. Go to your project (iovsadqmwnjssrcxvagu).
 3. Open the SQL Editor in the left sidebar.
 4. Create a "New Query".
 5. Copy the entire contents of `supabase/schema.sql` and paste it into the editor.
 6. Click Run. This will create all tables, indexes, and functions (including the PostGIS map search).
 
-### Step B: Create Your First Shop
-After running the schema, you need to add your shop to the `shops` table. Run this SQL in the editor:
+### Step B: Create Your First Admin & Shop
+Before creating shops, you need to promote your account to a Platform Admin.
+1. Go to your project's `/owner/login.html` and sign up with the email you want to use.
+2. Go to the **Authentication** section in your Supabase Dashboard and copy your **User ID** (UUID).
+3. Open the SQL Editor in Supabase and run this command:
 
 ```sql
--- Replace 'Your Shop Name' with your actual shop name
-INSERT INTO shops (name, slug, address, lat, lng, specialties, is_active)
-VALUES (
-  'PrintRUSH Lopez Main', 
-  'printrush-main', 
-  'Lopez, Quezon', 
-  13.8833, 
-  122.2667, 
-  '{documents, business, marketing}', 
-  true
-)
-RETURNING id;
+-- Replace 'PASTE_YOUR_USER_ID_HERE' with your UUID from Supabase Auth
+INSERT INTO platform_admins (user_id, role) 
+VALUES ('PASTE_YOUR_USER_ID_HERE', 'super_admin');
 ```
-**Take note of the ID returned.** This is your **Shop ID**.
+
+4. Now, visit your hidden Admin Dashboard using your secret easter egg URL:
+`https://print-rush-lopez.vercel.app/admin/?code=printrush-admin-easteregg` (Replace with your actual live URL)
+5. From the Admin Dashboard, use the **Shop Management** form to easily create your first shop and get your **Shop ID**.
 
 ---
 
@@ -51,7 +48,7 @@ This project now uses a fully internal sandbox for payments and delivery simulat
 1. You must have the Supabase CLI installed on your computer.
 2. Open your terminal in the `PrintRush Lopez` project folder.
 3. Log in to the CLI: `supabase login`
-4. Link your project: `supabase link --project-ref drgdywiewrvccbvjsswl`
+4. Link your project: `supabase link --project-ref iovsadqmwnjssrcxvagu`
 
 ### Step A: Deploy Sandbox Edge Functions
 Deploy the sandbox functions that handle payments, delivery booking, and status updates:
@@ -67,6 +64,10 @@ supabase functions deploy delivery-status
 - No live `PAYMONGO_SECRET_KEY` is required.
 - The platform now stores sandbox `payments` and `deliveries` records in Supabase with simulated timelines.
 - The checkout flow is handled with a local `/payment.html` sandbox experience.
+
+**If you want to go LIVE later, you will need:**
+1. **PayMongo** (for Payments): Create an account at https://paymongo.com/ to get your Live API Keys.
+2. **Shipmates** (for Delivery): Create an account at https://www.shipmates.app/ to get your Live API Keys.
 
 ### Step C: Optional Real Push Notifications
 Web Push is still optional. If you want notifications in the browser, deploy the `notify-push` function and configure VAPID keys.
@@ -117,15 +118,12 @@ This project now supports a tiered plan approach to make sales easier and to ali
 ### Growth focus
 - Position the app for campus printing shops and student convenience.
 - Use the sandbox demo flow to show shops the full ordering and delivery experience without requiring live payment or courier contracts.
-- Promote features like "skip the line", "track your print job", and "instant checkout demo." 
-
----
-
-## 5. Deployment (Vercel)
+- Promote features like "skip the line", "track your print job", and "instant checkout demo.## 5. Deployment (Vercel)
 
 Since your App URL is already on Vercel, any changes pushed to your GitHub repository will automatically deploy.
 
 1. Visit: https://print-rush-lopez.vercel.app/
+2. Vercel Dashboard: https://vercel.com/dashboard (to manage domains and deployments)
 
 ---
 
@@ -134,7 +132,7 @@ Since your App URL is already on Vercel, any changes pushed to your GitHub repos
 To be fully operational, ensure you have:
 1. Run the `schema.sql` in Supabase.
 2. Deployed the sandbox Edge Functions and optional push notification function via CLI.
-3. Created your first shop in the database.
-4. Created an owner account at `/owner/login.html` and linked it to your shop in the `shop_owners` table.
+3. Promoted your first account to a Platform Admin via SQL and logged into the Admin Dashboard.
+4. Used the Admin Dashboard to create your first shop, and then linked it to an owner account in the `shop_owners` table.
 5. Verified the sandbox payment flow and delivery timeline simulation.
-6. Verified the map loads correctly on the landing page.
+6. Verified the map loads correctly on the landing page.rrectly on the landing page.
