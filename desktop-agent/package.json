@@ -2,11 +2,13 @@
   "name": "printrush-desktop-agent",
   "version": "1.0.0",
   "description": "PrintRUSH Lopez Desktop Agent",
+  "author": "PrintRUSH Lopez",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win",
-    "build:publish": "electron-builder --win --publish always"
+    "pack": "electron-packager . PrintRUSH-Agent --platform=win32 --arch=x64 --out=dist --overwrite --ignore=node_modules/electron-builder --ignore=node_modules/@electron/packager --ignore=dist",
+    "build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win",
+    "build:publish": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win --publish always"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
@@ -17,6 +19,7 @@
     "pdf-to-printer": "^5.6.0"
   },
   "devDependencies": {
+    "@electron/packager": "^20.0.0",
     "electron": "^34.3.0",
     "electron-builder": "^24.13.3"
   },
@@ -25,8 +28,7 @@
     "productName": "PrintRUSH Desktop Agent",
     "copyright": "Copyright © 2025 PrintRUSH Lopez",
     "win": {
-      "target": "nsis",
-      "icon": "ui/icon.ico"
+      "target": "portable"
     },
     "nsis": {
       "oneClick": false,
@@ -47,4 +49,3 @@
     ]
   }
 }
-
