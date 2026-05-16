@@ -1,6 +1,9 @@
 # Dependencies
 desktop-agent/node_modules/
 
+# Supabase CLI temp
+supabase/.temp/
+
 # Build output
 desktop-agent/dist/
 
