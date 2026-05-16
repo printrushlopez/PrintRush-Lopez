@@ -133,8 +133,8 @@ async function init() {
   const fixMap = () => {
     if (map) {
       map.invalidateSize();
-      console.log('Map size invalidated');
     }
+
   };
   
   // Multiple attempts to ensure the container is ready
