@@ -12,7 +12,8 @@
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(self)" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.hcaptcha.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paymongo.com https://api.shipmates.ph https://js.hcaptcha.com https://*.tile.openstreetmap.org https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; frame-src https://hcaptcha.com https://*.hcaptcha.com;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.hcaptcha.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paymongo.com https://api.shipmates.ph https://js.hcaptcha.com https://*.tile.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://cdn.jsdelivr.net; frame-src https://hcaptcha.com https://*.hcaptcha.com;"
+
         }
       ]
     },
