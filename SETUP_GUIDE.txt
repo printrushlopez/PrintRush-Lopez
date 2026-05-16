@@ -65,10 +65,6 @@ supabase functions deploy delivery-status
 - The platform now stores sandbox `payments` and `deliveries` records in Supabase with simulated timelines.
 - The checkout flow is handled with a local `/payment.html` sandbox experience.
 
-**If you want to go LIVE later, you will need:**
-1. **PayMongo** (for Payments): Create an account at https://paymongo.com/ to get your Live API Keys.
-2. **Shipmates** (for Delivery): Create an account at https://www.shipmates.app/ to get your Live API Keys.
-
 ### Step C: Optional Real Push Notifications
 Web Push is still optional. If you want notifications in the browser, deploy the `notify-push` function and configure VAPID keys.
 1. Deploy the function:

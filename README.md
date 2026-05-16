@@ -20,7 +20,7 @@ The ecosystem relies on three core pillars:
 2. **Supabase (Backend)**
    - **PostgreSQL Database:** Handles the multi-tenant architecture safely via Row Level Security (RLS).
    - **Realtime:** Live queue tracking via WebSockets.
-   - **Edge Functions (Deno):** Securely handles PayMongo webhook callbacks, Shipmates delivery dispatches, and Web Push notifications.
+   - **Edge Functions (Deno):** Securely handles sandbox payment simulations, simulated delivery tracking, and Web Push notifications.
 
 3. **Desktop Agent (Hybrid Bridge)**
    - A native Electron application that acts as a "Super Shell" for the Owner Portal.
@@ -66,21 +66,7 @@ For a full production deployment, you must configure the following keys. **Never
 - `APP_URL`: The URL where your PWA is hosted (e.g., `https://your-shop.vercel.app`).
 - `SHOP_ID`: The UUID or ID of the shop associated with this specific PC.
 
-### 2. PayMongo (Payments)
-**Where to put:** Supabase Secrets (for Edge Functions).
-Run this via Supabase CLI:
-```bash
-supabase secrets set PAYMONGO_WEBHOOK_SECRET=your_paymongo_webhook_secret_key
-```
-
-### 3. Shipmates (Delivery)
-**Where to put:** Supabase Secrets.
-Run this via Supabase CLI:
-```bash
-supabase secrets set SHIPMATES_API_KEY=your_shipmates_production_api_token
-```
-
-### 4. VAPID Keys (Web Push Notifications)
+### 2. VAPID Keys (Web Push Notifications)
 1. Generate your VAPID keys online (e.g., at vapidkeys.com).
 2. **Public Key:** Paste the VAPID Public Key into `js/lib/push.js` at line 9 (`VAPID_PUBLIC_KEY`).
 3. **Private Key:** Set this as a Supabase Secret:
@@ -88,7 +74,7 @@ supabase secrets set SHIPMATES_API_KEY=your_shipmates_production_api_token
    supabase secrets set VAPID_PRIVATE_KEY=your_vapid_private_key
    ```
 
-### 5. Vercel (Hosting)
+### 3. Vercel (Hosting)
 - Connect your GitHub repository to Vercel. Vercel will automatically read the `vercel.json` file. No environment variables are strictly required on Vercel itself, as the frontend securely calls Supabase.
 
 ---
