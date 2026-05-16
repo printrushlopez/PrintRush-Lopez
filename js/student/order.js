@@ -101,7 +101,8 @@ async function loadShops() {
   list.innerHTML = `<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);"><div class="spinner"></div></div>`;
   const { data, error } = await supabase.from('shops').select('id,name,slug,address,is_active').eq('is_active', true).order('name');
   if (error || !data?.length) {
-    list.innerHTML = `<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--text-sm);"><span class="icon icon-lg"><i data-lucide="store-x"></i></span><p>${error ? 'Failed to load shops: ' + error.message : 'No shops are currently open. Please try again later.'}</p></div>`;
+    list.innerHTML = `<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--text-sm);"><span class="icon icon-lg"><i data-lucide="alert-circle"></i></span><p>${error ? 'Failed to load shops: ' + error.message : 'No shops are currently open. Please try again later.'}</p></div>`;
+
     if (window.lucide) window.lucide.createIcons();
     return;
   }
