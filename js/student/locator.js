@@ -192,36 +192,50 @@ function updateUserLocation(lat, lng, pan = true) {
 
 async function loadShops(lat, lng) {
   try {
+    console.log(`Searching for shops near ${lat}, ${lng}...`);
     const { data, error } = await supabase.rpc('get_shops_near', {
       user_lat: lat,
       user_lng: lng,
-      max_dist_meters: 15000 // 15km range to cover municipality
+      max_dist_meters: 15000 // 15km range
     });
 
-    if (error) throw error;
+    if (error) {
+      console.warn('RPC search failed, trying direct fetch fallback:', error);
+      throw error;
+    }
     allShops = data || [];
   } catch (err) {
-    console.error('RPC failed, trying fallback:', err);
+    console.error('Map loading error:', err);
     // Fallback: Fetch all active shops and calculate distance in JS
-    const { data, error } = await supabase
-      .from('shops')
-      .select('*')
-      .eq('is_active', true);
-    
-    if (error) {
-      console.error('Fallback also failed:', error);
-      setShopListMessage('Failed to load nearby shops. Please check your connection.', true);
+    try {
+      const { data, error } = await supabase
+        .from('shops')
+        .select('*')
+        .eq('is_active', true);
+      
+      if (error) throw error;
+
+      allShops = (data || []).filter(s => s.lat && s.lng).map(s => ({
+        ...s,
+        distance_meters: calculateDistance(lat, lng, s.lat, s.lng)
+      })).sort((a, b) => a.distance_meters - b.distance_meters);
+    } catch (fallbackErr) {
+      console.error('Fallback also failed:', fallbackErr);
+      setShopListMessage('Failed to load nearby shops. Please check your Supabase configuration or internet connection.', true);
       return;
     }
-
-    allShops = (data || []).filter(s => s.lat && s.lng).map(s => ({
-      ...s,
-      distance_meters: calculateDistance(lat, lng, s.lat, s.lng)
-    })).sort((a, b) => a.distance_meters - b.distance_meters);
   }
 
+  if (allShops.length === 0) {
+    console.log('No shops found in database.');
+    setShopListMessage('No print shops are registered in Lopez yet. Be the first to join!');
+    return;
+  }
+
+  console.log(`Successfully loaded ${allShops.length} shops.`);
   renderShops();
 }
+
 
 /** Haversine formula for distance calculation in JS fallback */
 function calculateDistance(lat1, lon1, lat2, lon2) {
