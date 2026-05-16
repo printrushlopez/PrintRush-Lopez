@@ -118,6 +118,40 @@
       <div id="promoteMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
     </section>
 
+    <!-- ── Send Agent Setup Email ── -->
+    <section class="card" style="margin-bottom:var(--space-6);border-color:var(--cyan-20);">
+      <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
+        <span class="icon icon-md" style="color:var(--cyan);"><i data-lucide="send"></i></span>
+        <h3 style="margin:0;font-size:var(--text-xl);">Send Agent Setup Email</h3>
+      </div>
+      <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-5);">
+        After creating a shop above, use this form to send the owner a one-click setup email. It includes their
+        <strong>Shop ID</strong>, <strong>Anon Key</strong>, and a direct download link for the
+        <strong>PrintRUSH Desktop Agent (.exe)</strong> installer.
+      </p>
+      <form id="sendAgentEmailForm" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label" for="emailShopName">Shop Name</label>
+          <input class="form-input" type="text" id="emailShopName" placeholder="Lopez Print Center" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="emailShopId">Shop ID (UUID)</label>
+          <input class="form-input" type="text" id="emailShopId" placeholder="Paste from Shop Management above" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="emailOwnerEmail">Owner's Email Address</label>
+          <input class="form-input" type="email" id="emailOwnerEmail" placeholder="owner@shop.com" required />
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <button class="btn btn-primary" type="submit" id="sendEmailBtn" style="width:100%;">
+            <span class="icon icon-sm"><i data-lucide="send"></i></span>
+            Send Setup Email to Owner
+          </button>
+        </div>
+      </form>
+      <div id="sendEmailMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+    </section>
+
     <section class="card" style="margin-bottom:var(--space-6);">
       <h3 style="margin-top:0;font-size:var(--text-xl);">Platform Insights</h3>
       <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);">
@@ -126,6 +160,7 @@
       </div>
       <div id="auditReport" style="margin-top:var(--space-4);color:var(--text-muted);font-size:var(--text-sm);line-height:1.7;"></div>
     </section>
+
 
     <section class="card">
       <h3 style="margin-top:0;font-size:var(--text-xl);">System notes</h3>

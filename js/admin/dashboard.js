@@ -146,4 +146,47 @@ if (promoteAdminForm) {
   });
 }
 
+// ── Send Agent Setup Email ─────────────────────────────────────────────────────
+const sendEmailForm    = document.getElementById('sendAgentEmailForm');
+const sendEmailMessage = document.getElementById('sendEmailMessage');
+
+if (sendEmailForm) {
+  sendEmailForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn       = document.getElementById('sendEmailBtn');
+    const shopId    = document.getElementById('emailShopId').value.trim();
+    const ownerEmail = document.getElementById('emailOwnerEmail').value.trim();
+    const shopName  = document.getElementById('emailShopName').value.trim();
+
+    if (!shopId || !ownerEmail || !shopName) {
+      sendEmailMessage.textContent = 'All fields are required.';
+      sendEmailMessage.style.color = 'var(--magenta)';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    sendEmailMessage.textContent = '';
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-agent-email', {
+        body: { shopId, ownerEmail, shopName }
+      });
+      if (error) throw error;
+
+      sendEmailMessage.textContent = `✅ Setup email sent to ${ownerEmail}!`;
+      sendEmailMessage.style.color = 'var(--cyan)';
+      sendEmailForm.reset();
+    } catch (err) {
+      sendEmailMessage.textContent = `Error: ${err.message}`;
+      sendEmailMessage.style.color = 'var(--magenta)';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span class="icon icon-sm"><i data-lucide="send"></i></span> Send Setup Email';
+    if (window.lucide) window.lucide.createIcons();
+  });
+}
+
 loadAdminStats();
+

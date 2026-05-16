@@ -94,23 +94,23 @@ graph TD
 ---
 
 ## 💻 4. Desktop Agent Setup (For Shop Owners)
-To unlock the full potential of your PrintRUSH shop (like silent printing and Bluetooth integration), you must install the Desktop Agent on your shop's primary Windows PC.
+The PrintRUSH Desktop Agent is a **Windows application** that gives your shop superpowers — silent printing and automatic Bluetooth file detection. Setup takes less than 5 minutes and requires zero technical knowledge.
 
-### Installation Steps:
-1. **Prerequisites:** Ensure [Node.js](https://nodejs.org/) is installed on your PC.
-2. **Download:** Open the `desktop-agent` folder in your terminal.
-3. **Install Dependencies:** Run the command `npm install`
-4. **Configuration:** Create a `.env` file inside the `desktop-agent` folder and add your shop details:
-   ```env
-   SUPABASE_URL=https://iovsadqmwnjssrcxvagu.supabase.co
-   SUPABASE_ANON_KEY=your-anon-key-here
-   SHOP_ID=your-shop-uuid-here
-   APP_URL=https://print-rush-lopez.vercel.app
-   BLUETOOTH_FOLDER=C:\Users\Public\Downloads
-   ```
-5. **Launch:** Run `npm start`.
+### What happens after your shop is confirmed:
+1. You will receive an **email** from PrintRUSH with a download link and your unique **Shop ID** and **Key**.
+2. Click the download link in the email to get the **PrintRUSH Agent Installer** (`.exe` file).
+3. Double-click the installer → Click **Next → Next → Finish** (like any Windows program).
+4. The app opens automatically and shows you a simple screen: **paste your Shop ID and Key** from the email.
+5. Click **Connect My Shop** → Done! The portal loads and your shop is live. ✅
 
-### How to use it:
-- **Bluetooth Walk-ins:** Once running, any file sent to your PC via Bluetooth will instantly pop up as a notification inside your Kanban board. Click "Create Job" to immediately add the walk-in to your queue.
-- **Silent Printing:** Instead of manually opening files, just click **Print** on any PDF job card in your portal to send it directly to your default Windows printer.
-- **Important:** These superpowers only work when viewing your shop portal *inside* the Desktop Agent window. If you open it in Google Chrome, it will run as a standard website.
+### The app runs silently in your system tray:
+- Look for the PrintRUSH icon in your Windows taskbar tray (bottom-right corner).
+- **Right-click** the icon to open your queue, check for updates, or quit.
+- The app **auto-updates silently** — you will always have the latest version without doing anything.
+
+### How to use the features:
+- **Silent Printing:** Click the **Print** button on any job card in your portal to send it directly to your Windows printer. No opening files manually.
+- **Bluetooth Walk-ins:** When a customer sends a file to your PC via Bluetooth, a notification pops up automatically inside your portal. Click **Create Job** to add them to the queue instantly.
+
+> **Important:** The Print button and Bluetooth features only work when viewing your portal *inside the Desktop Agent*. Opening it in Google Chrome will run it as a standard website without these extras.
+

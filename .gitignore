@@ -1,0 +1,17 @@
+# Dependencies
+desktop-agent/node_modules/
+
+# Build output
+desktop-agent/dist/
+
+# Environment secrets
+desktop-agent/.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.suo

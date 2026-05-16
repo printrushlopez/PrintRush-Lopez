@@ -1,17 +1,50 @@
 {
-  "name": "desktop-agent",
+  "name": "printrush-desktop-agent",
   "version": "1.0.0",
   "description": "PrintRUSH Lopez Desktop Agent",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:publish": "electron-builder --win --publish always"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "axios": "^1.7.2",
     "chokidar": "^3.6.0",
-    "dotenv": "^16.4.7",
-    "electron": "^34.3.0",
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7",
     "pdf-to-printer": "^5.6.0"
+  },
+  "devDependencies": {
+    "electron": "^34.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "ph.lopez.printrush.agent",
+    "productName": "PrintRUSH Desktop Agent",
+    "copyright": "Copyright © 2025 PrintRUSH Lopez",
+    "win": {
+      "target": "nsis",
+      "icon": "ui/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PrintRUSH Agent"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "printrushlopez",
+      "repo": "PrintRush-Lopez"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.bin",
+      "!**/*.map"
+    ]
   }
 }
+

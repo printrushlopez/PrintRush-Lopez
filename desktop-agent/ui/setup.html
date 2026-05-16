@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrintRUSH — Connect Your Shop</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan:    #00C2E0;
+      --magenta: #E8007D;
+      --yellow:  #FFD600;
+      --bg:      #0D0D12;
+      --surface: #16161E;
+      --border:  #2A2A38;
+      --text:    #F0F0F8;
+      --muted:   #888899;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-app-region: drag;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 440px;
+      -webkit-app-region: no-drag;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+
+    /* CMYK logo mark */
+    .logo-mark {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 20px;
+    }
+    .dot {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      opacity: 0.85;
+      mix-blend-mode: screen;
+    }
+    .dot-c { background: var(--cyan);    top: 0;    left: 0; }
+    .dot-m { background: var(--magenta); top: 0;    right: 0; }
+    .dot-y { background: var(--yellow);  bottom: 0; left: 50%; transform: translateX(-50%); }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    h1 span { background: linear-gradient(90deg, var(--cyan), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    input:focus { border-color: var(--cyan); }
+    input::placeholder { color: #444455; }
+
+    .hint {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: -16px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      color: #fff;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover  { opacity: 0.92; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .error {
+      background: rgba(232,0,125,0.12);
+      border: 1px solid rgba(232,0,125,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #ff6bba;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .footer-note {
+      font-size: 11.5px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-mark" aria-hidden="true">
+      <div class="dot dot-c"></div>
+      <div class="dot dot-m"></div>
+      <div class="dot dot-y"></div>
+    </div>
+
+    <h1><span>PrintRUSH</span> Lopez</h1>
+    <p class="subtitle">Welcome! To connect your shop, enter the<br><strong>Shop ID</strong> that was sent to your email.</p>
+
+    <div id="errorBox" class="error"></div>
+
+    <form id="setupForm" novalidate>
+      <label for="shopId">Your Shop ID</label>
+      <input
+        type="text"
+        id="shopId"
+        placeholder="e.g. 8f3a-2c1b-..."
+        autocomplete="off"
+        spellcheck="false"
+        required
+      />
+      <p class="hint">📧 This was emailed to you when your shop was approved by PrintRUSH.</p>
+
+      <label for="supabaseKey">Supabase Anon Key</label>
+      <input
+        type="text"
+        id="supabaseKey"
+        placeholder="eyJhbGci..."
+        autocomplete="off"
+        spellcheck="false"
+        required
+      />
+      <p class="hint">🔑 Also included in your approval email. This never expires.</p>
+
+      <button type="submit" class="btn" id="connectBtn">Connect My Shop →</button>
+    </form>
+
+    <hr class="divider" />
+    <p class="footer-note">
+      Didn't receive your email? Contact PrintRUSH support<br>
+      or check your spam folder.
+    </p>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('setupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorBox  = document.getElementById('errorBox');
+      const btn       = document.getElementById('connectBtn');
+      const shopId    = document.getElementById('shopId').value.trim();
+      const supabaseKey = document.getElementById('supabaseKey').value.trim();
+
+      errorBox.style.display = 'none';
+
+      if (!shopId) {
+        errorBox.textContent = 'Please enter your Shop ID.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (!supabaseKey || supabaseKey.length < 20) {
+        errorBox.textContent = 'Please enter a valid Supabase Anon Key.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Connecting…';
+
+      const result = await ipcRenderer.invoke('save-config', { shopId, supabaseKey });
+
+      if (!result.success) {
+        errorBox.textContent = result.error || 'Something went wrong. Please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Connect My Shop →';
+      }
+      // On success, main.js closes this window and opens the portal
+    });
+  </script>
+</body>
+</html>
