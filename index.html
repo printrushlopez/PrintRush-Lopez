@@ -550,32 +550,73 @@
       }
     }
 
-    /* ── RESPONSIVE ── */
+    .site-header {
+      background: var(--glass);
+      backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: var(--z-overlay);
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-6);
+      transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .site-header {
+      background: var(--glass-dark);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-title .grad {
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 10px rgba(0, 153, 187, 0.2));
+    }
+
+    .preview-card {
+      background: var(--glass);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      min-width: 180px;
+      box-shadow: var(--shadow-md);
+      text-align: left;
+    }
+
+    [data-theme="dark"] .preview-card {
+      background: var(--glass-dark);
+    }
+
+    .live-pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      margin-right: 6px;
+      box-shadow: 0 0 10px #00ff88;
+      animation: pulse-live 1.5s infinite;
+    }
+
+    @keyframes pulse-live {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
     @media (max-width: 600px) {
-      .hero-actions {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .hero-actions .btn {
-        width: 100%;
-        max-width: 320px;
-        justify-content: center;
-      }
-
-      .hero-preview {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .preview-card {
-        width: 100%;
-        max-width: 320px;
-      }
-
-      .cat-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      .hide-mobile { display: none; }
     }
   </style>
 </head>
@@ -593,11 +634,21 @@
       </div>
       <div class="logo-text"><span>PrintRUSH</span> Lopez</div>
     </a>
-    <nav>
-      <button class="btn btn-primary btn-sm" id="installPwaBtn" style="display:none;margin-right:8px;">
+    <div class="header-actions">
+      <button class="btn btn-cyan btn-sm" id="installPwaBtn" style="display:none;margin-right:var(--space-2);box-shadow:var(--glow-cyan);">
         <span class="icon icon-sm"><i data-lucide="download"></i></span> Install App
       </button>
-      <a href="/owner/login.html" class="btn btn-outline btn-sm" id="shopLoginBtn">
+      <nav>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span class="theme-icon-sun icon icon-sm"><i data-lucide="sun"></i></span>
+          <span class="theme-icon-moon icon icon-sm"><i data-lucide="moon"></i></span>
+        </button>
+      </nav>
+      <a href="/owner/login.html" class="btn btn-outline btn-sm hide-mobile" id="shopLoginBtn" style="margin-left:var(--space-3);">
+        Shop Login
+      </a>
+    </div>
+  </header>
         <span class="icon icon-sm"><i data-lucide="store"></i></span>
         Shop Login
       </a>
