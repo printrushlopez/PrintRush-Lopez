@@ -1,7 +1,7 @@
 /* PrintRUSH Lopez — Service Worker
    Handles: offline caching, Web Push notifications, background sync */
 
-const CACHE_NAME    = 'printrush-v1';
+const CACHE_NAME    = 'printrush-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -29,7 +29,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.map(k => caches.delete(k)))  // Delete ALL old caches, not just ones != CACHE_NAME
     )
   );
   self.clients.claim();
