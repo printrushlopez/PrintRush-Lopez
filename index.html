@@ -903,8 +903,38 @@
             </div>
           </div>
         </div>
-        <div class="preview-card" style="padding:0; overflow:hidden; border-radius:var(--radius-2xl); box-shadow:var(--shadow-xl); transform: rotate(2deg);">
-          <img src="https://images.unsplash.com/photo-1586075010633-2442dc3d6334?q=80&w=800&auto=format&fit=crop" alt="Desktop Agent Preview" style="width:100%; height:auto; opacity:0.9;">
+        <div class="preview-card" style="padding:0; overflow:hidden; border-radius:var(--radius-2xl); box-shadow:var(--shadow-xl); transform: rotate(2deg); background: linear-gradient(135deg, var(--cyan-5) 0%, var(--blue-5) 100%); min-height:400px; display:flex; align-items:center; justify-content:center;">
+          <svg viewBox="0 0 800 600" style="width:100%; height:auto; opacity:0.95;" aria-label="Desktop Agent Preview">
+            <!-- Monitor base -->
+            <rect x="150" y="80" width="500" height="340" rx="20" fill="#2a2a3e" stroke="#444" stroke-width="2"/>
+            <!-- Screen -->
+            <rect x="160" y="90" width="480" height="320" rx="12" fill="#1a1a2e"/>
+            <!-- Window header -->
+            <rect x="160" y="90" width="480" height="45" rx="12" fill="#0099BB"/>
+            <!-- Window controls -->
+            <circle cx="190" cy="112" r="4" fill="#ff6b6b"/>
+            <circle cx="210" cy="112" r="4" fill="#ffd93d"/>
+            <circle cx="230" cy="112" r="4" fill="#6bcf7f"/>
+            <!-- Window title -->
+            <text x="400" y="125" font-family="Arial" font-size="16" fill="white" text-anchor="middle" font-weight="bold">PrintRUSH Queue Dashboard</text>
+            <!-- Content area -->
+            <rect x="170" y="145" width="460" height="255" fill="#0f0f23"/>
+            <!-- Sample queue items -->
+            <rect x="185" y="160" width="430" height="30" rx="6" fill="#0099BB" opacity="0.3"/>
+            <text x="200" y="180" font-family="Arial" font-size="12" fill="#0099BB">Job #001 - Processing</text>
+            <rect x="185" y="200" width="430" height="30" rx="6" fill="#6bcf7f" opacity="0.3"/>
+            <text x="200" y="220" font-family="Arial" font-size="12" fill="#6bcf7f">Job #002 - Queued</text>
+            <rect x="185" y="240" width="430" height="30" rx="6" fill="#ffd93d" opacity="0.3"/>
+            <text x="200" y="260" font-family="Arial" font-size="12" fill="#ffd93d">Job #003 - Pending</text>
+            <rect x="185" y="280" width="430" height="30" rx="6" fill="#ff6b6b" opacity="0.3"/>
+            <text x="200" y="300" font-family="Arial" font-size="12" fill="#ff6b6b">Job #004 - Error</text>
+            <rect x="185" y="320" width="430" height="30" rx="6" fill="#0099BB" opacity="0.2"/>
+            <text x="200" y="340" font-family="Arial" font-size="12" fill="#888">Job #005 - Scheduled</text>
+            <!-- Monitor stand -->
+            <rect x="320" y="430" width="160" height="15" rx="7" fill="#2a2a3e" stroke="#444" stroke-width="2"/>
+            <!-- Monitor base bottom -->
+            <rect x="310" y="445" width="180" height="30" rx="4" fill="#1a1a2e" stroke="#444" stroke-width="2"/>
+          </svg>
         </div>
       </div>
     </section>
