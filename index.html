@@ -314,12 +314,58 @@
       border-radius: var(--radius-full);
     }
 
+    .search-filter-bar {
+      display: flex;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+      align-items: center;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 0 auto var(--space-6) auto;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      padding: 10px 16px 10px 42px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: var(--text-sm);
+      outline: none;
+      transition: all var(--dur-base) ease;
+    }
+
+    .search-input-wrap input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px var(--cyan-20);
+    }
+
+    .search-input-wrap .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
+
     .filter-chips {
       display: flex;
       gap: var(--space-2);
-      margin-bottom: var(--space-4);
       overflow-x: auto;
-      padding-bottom: var(--space-2);
+      padding-bottom: 2px;
+      flex: 1.5;
+      min-width: 280px;
+      align-items: center;
     }
 
     .chip {
@@ -754,12 +800,18 @@
         <h2 class="section-title">Find Nearest Shop</h2>
         <p class="section-sub">Locate specialized print shops in Lopez, Quezon based on your current position.</p>
 
-        <div class="filter-chips" id="specialtyFilters">
-          <button class="chip active" data-specialty="all">All Shops</button>
-          <button class="chip" data-specialty="documents">Documents</button>
-          <button class="chip" data-specialty="clothing">Clothing</button>
-          <button class="chip" data-specialty="large_format">Large Format</button>
-          <button class="chip" data-specialty="business">Business</button>
+        <div class="search-filter-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon"><i data-lucide="search"></i></span>
+            <input type="text" id="shopSearchInput" placeholder="Search shops by name, address, or service...">
+          </div>
+          <div class="filter-chips" id="specialtyFilters">
+            <button class="chip active" data-specialty="all">All Shops</button>
+            <button class="chip" data-specialty="documents">Documents</button>
+            <button class="chip" data-specialty="clothing">Clothing</button>
+            <button class="chip" data-specialty="large_format">Large Format</button>
+            <button class="chip" data-specialty="business">Business</button>
+          </div>
         </div>
 
         <div class="locator-grid">

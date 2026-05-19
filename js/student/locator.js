@@ -7,6 +7,7 @@ let shopMarkers = [];
 let allShops = [];
 let currentFilter = 'all';
 let userCoords = null;
+let searchQuery = '';
 
 async function ensureLeaflet() {
   if (window.L) return;
@@ -175,6 +176,15 @@ async function init() {
       renderShops();
     });
   });
+
+  // Search Input Handler
+  const searchInput = document.getElementById('shopSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderShops();
+    });
+  }
 }
 
 function updateUserLocation(lat, lng, pan = true) {
@@ -263,19 +273,36 @@ function renderShops() {
   shopMarkers = [];
 
   // Filter shops
-  const filtered = currentFilter === 'all' 
+  let filtered = currentFilter === 'all' 
     ? allShops 
     : allShops.filter(s => s.specialties && s.specialties.includes(currentFilter));
+
+  // Filter by search query
+  if (searchQuery && searchQuery.trim() !== '') {
+    const q = searchQuery.toLowerCase().trim();
+    filtered = filtered.filter(s => 
+      s.name.toLowerCase().includes(q) || 
+      (s.address && s.address.toLowerCase().includes(q)) ||
+      (s.specialties && s.specialties.some(spec => spec.toLowerCase().includes(q)))
+    );
+  }
 
   if (filtered.length === 0) {
     listEl.innerHTML = `
       <div style="text-align:center;padding:24px;color:var(--text-muted);">
-        <p style="margin-bottom:16px;">No shops found in this category.</p>
-        <button id="retryShopsBtn" class="btn btn-primary btn-sm">Retry search</button>
+        <p style="margin-bottom:16px;">No shops match your filter or search query.</p>
+        <button id="clearSearchBtn" class="btn btn-outline btn-sm">Clear search</button>
       </div>
     `;
-    const retry = document.getElementById('retryShopsBtn');
-    if (retry) retry.addEventListener('click', () => requestLocationAndLoadShops());
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        const searchInput = document.getElementById('shopSearchInput');
+        if (searchInput) searchInput.value = '';
+        searchQuery = '';
+        renderShops();
+      });
+    }
     return;
   }
 
