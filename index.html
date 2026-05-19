@@ -375,21 +375,31 @@
       background: var(--bg-alt);
     }
 
-    .service-carousel {
-      display: flex;
-      gap: var(--space-5);
-      overflow-x: auto;
-      padding: var(--space-2) var(--space-4) var(--space-8);
-      scroll-snap-type: x mandatory;
-      scrollbar-width: thin;
-      scrollbar-color: var(--cyan) var(--border);
-      max-width: 1200px;
-      margin: 0 auto;
+    .service-marquee-wrapper {
+      overflow: hidden;
+      width: 100%;
+      padding: var(--space-2) 0 var(--space-8);
+      position: relative;
+      /* Add soft fade to edges for a more premium look */
+      -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
     }
     
-    .service-carousel::-webkit-scrollbar { height: 8px; }
-    .service-carousel::-webkit-scrollbar-track { background: var(--border); border-radius: 4px; margin: 0 20px; }
-    .service-carousel::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
+    .service-marquee-track {
+      display: flex;
+      gap: var(--space-5);
+      width: max-content;
+      animation: marquee-scroll 45s linear infinite;
+    }
+
+    .service-marquee-track:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes marquee-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(calc(-50% - (var(--space-5) / 2))); }
+    }
 
     .service-card {
       min-width: 280px;
@@ -806,7 +816,8 @@
       <div class="container">
         <h2 class="section-title" id="services-heading">Everything you need, printed</h2>
         <p class="section-sub">13 service categories across all registered shops in Lopez, Quezon.</p>
-        <div class="service-carousel" role="list">
+        <div class="service-marquee-wrapper" role="region" aria-label="Services carousel">
+          <div class="service-marquee-track" id="serviceTrack">
           <!-- Card 1 -->
           <a href="#specialtyFilters" onclick="setTimeout(()=>document.querySelector('[data-specialty=\'documents\']').click(), 100)" class="service-card" role="listitem">
             <div class="service-card-img-wrap"><img src="/img/services/documents.png" class="service-card-img" alt="Documents & Copies"></div>
@@ -923,7 +934,15 @@
               <p class="service-card-desc">Rush and same-day priority printing, and on-demand delivery fulfillment options.</p>
             </div>
           </a>
+          </div>
         </div>
+        <script>
+          // Automatically duplicate cards for a seamless infinite marquee effect
+          const track = document.getElementById('serviceTrack');
+          if (track) {
+            track.insertAdjacentHTML('beforeend', track.innerHTML);
+          }
+        </script>
       </div>
     </section>
 
