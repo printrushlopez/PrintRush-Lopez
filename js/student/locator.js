@@ -6,6 +6,7 @@ let userMarker = null;
 let shopMarkers = [];
 let allShops = [];
 let currentFilter = 'all';
+let userCoords = null;
 
 async function ensureLeaflet() {
   if (window.L) return;
@@ -78,6 +79,7 @@ function requestLocationAndLoadShops() {
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const { latitude, longitude } = pos.coords;
+      userCoords = { lat: latitude, lng: longitude };
       const isInside = latitude >= LOPEZ_BOUNDS[0][0] && latitude <= LOPEZ_BOUNDS[1][0] &&
                        longitude >= LOPEZ_BOUNDS[0][1] && longitude <= LOPEZ_BOUNDS[1][1];
       if (isInside) {
@@ -278,13 +280,32 @@ function renderShops() {
   }
 
   listEl.innerHTML = filtered.map(shop => {
-    const dist = (shop.distance_meters / 1000).toFixed(1);
+    let distanceMeters = shop.distance_meters;
+    if (userCoords) {
+      distanceMeters = calculateDistance(userCoords.lat, userCoords.lng, shop.lat, shop.lng);
+    }
+    const dist = (distanceMeters / 1000).toFixed(1);
     
+    const specialtyLabels = {
+      documents: 'Documents',
+      clothing: 'Clothing',
+      large_format: 'Large Format',
+      business: 'Business'
+    };
+
+    const specialtyHtml = shop.specialties && shop.specialties.length > 0
+      ? shop.specialties.map(spec => {
+          const label = specialtyLabels[spec] || spec;
+          return `<span style="font-size:9px; background:var(--cyan-10); color:var(--cyan); padding:2px 6px; border-radius:4px; margin-right:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">${label}</span>`;
+        }).join('')
+      : `<span style="font-size:9px; background:var(--border); color:var(--text-muted); padding:2px 6px; border-radius:4px; margin-right:4px; font-weight:600; text-transform:uppercase;">General Print</span>`;
+
     // Add Marker
     const marker = L.marker([shop.lat, shop.lng]).addTo(map)
       .bindPopup(`
         <div style="font-family:var(--font-heading);font-weight:bold;">${shop.name}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">${shop.address || 'Lopez, Quezon'}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${shop.address || 'Lopez, Quezon'}</div>
+        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${specialtyHtml}</div>
         <a href="/order.html?shop=${shop.slug}" class="btn btn-primary btn-xs" style="width:100%;color:#fff;text-decoration:none;">Order Now</a>
       `);
     
@@ -293,8 +314,8 @@ function renderShops() {
     return `
       <div class="shop-geo-card" onclick="window._focusShop(${shop.lat}, ${shop.lng}, ${shopMarkers.indexOf(marker)})">
         <div>
-          <div style="font-weight:var(--fw-bold);font-size:var(--text-sm);">${shop.name}</div>
-          <div style="font-size:var(--text-xs);color:var(--text-muted);">${shop.specialties ? shop.specialties.join(' • ') : ''}</div>
+          <div style="font-weight:var(--fw-bold);font-size:var(--text-sm);margin-bottom:4px;">${shop.name}</div>
+          <div style="display:flex; flex-wrap:wrap; gap:4px;">${specialtyHtml}</div>
         </div>
         <div class="dist-badge">${dist}km</div>
       </div>
