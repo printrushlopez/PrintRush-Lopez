@@ -20,6 +20,20 @@ const PAYMENT_LABELS = { gcash:'GCash', maya:'Maya', cash_pickup:'Cash Pickup', 
 const COLOR_LABELS   = { bw:'B&W', color:'Color' };
 
 let state = { jobs: [], shopId: null, shopSlug: null };
+let btFile = null;
+
+function handleElectronBridge() {
+  if (window.electronAPI) {
+    window.electronAPI.onBluetoothFile((file) => {
+      btFile = file;
+      const banner = document.getElementById('btBanner');
+      if (banner) {
+        banner.querySelector('.bt-name').textContent = file.name;
+        banner.classList.add('show');
+      }
+    });
+  }
+}
 
 async function init() {
   // Auth
@@ -230,7 +244,7 @@ function buildJobCard(job, col) {
       <div class="job-card-meta">
         ${payBadge}
         ${colorBadge}
-        <span class="badge badge-sm" style="background:var(--surface);border:1px solid var(--border);">₱${(job.estimated_total||0).toFixed(0)}</span>
+        <span class="badge badge-sm" style="background:var(--surface);border:1px solid var(--border);">₱${(job.total_price||0).toFixed(0)}</span>
         ${job.pages ? `<span style="font-size:10px;color:var(--text-faint);">${job.pages}p × ${job.copies||1}</span>` : ''}
       </div>
       <div class="job-card-actions">
@@ -315,7 +329,7 @@ function openModal(jobId) {
     ['Print Side',      job.print_side || 'Single-sided'],
     ['Special Notes',   job.special_notes || '—'],
     ['Payment',         PAYMENT_LABELS[job.payment_method] || job.payment_method],
-    ['Estimated Total', `₱${(job.estimated_total||0).toFixed(2)}`],
+    ['Total Price', `₱${(job.total_price||0).toFixed(2)}`],
     ['Status',          job.job_status.charAt(0).toUpperCase() + job.job_status.slice(1)],
     ['Submitted',       new Date(job.created_at).toLocaleString('en-PH')],
     ['Job Token',       `<code style="font-size:10px;">${job.job_token || '—'}</code>`],

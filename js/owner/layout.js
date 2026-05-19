@@ -1,7 +1,7 @@
 /* PrintRUSH Lopez — Owner Sidebar Layout (shared across all owner pages) */
 
 const NAV_ITEMS = [
-  { href: '/owner/queue',     icon: 'layout-kanban', label: 'Queue Board'   },
+  { href: '/owner/queue',     icon: 'kanban',        label: 'Queue Board'   },
   { href: '/owner/dashboard', icon: 'bar-chart-3',   label: 'Dashboard'     },
   { href: '/owner/services',  icon: 'tag',           label: 'Services'      },
   { href: '/owner/inventory', icon: 'package',       label: 'Inventory'     },

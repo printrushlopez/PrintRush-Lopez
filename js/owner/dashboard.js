@@ -25,15 +25,15 @@ async function loadStats(shopId) {
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
   const [{ data: todayJobs }, { data: monthJobs }] = await Promise.all([
-    supabase.from('jobs').select('estimated_total,job_status,service_name,payment_method,created_at')
+    supabase.from('jobs').select('total_price,job_status,service_name,payment_method,created_at')
       .eq('shop_id', shopId).gte('created_at', today.toISOString()),
-    supabase.from('jobs').select('estimated_total,job_status,service_name,payment_method,created_at')
+    supabase.from('jobs').select('total_price,job_status,service_name,payment_method,created_at')
       .eq('shop_id', shopId).gte('created_at', monthStart.toISOString()),
   ]);
 
   const done = (todayJobs||[]).filter(j => j.job_status === 'done');
-  const revenueToday  = done.reduce((s,j) => s + (j.estimated_total||0), 0);
-  const revenueMonth  = (monthJobs||[]).filter(j=>j.job_status==='done').reduce((s,j)=>s+(j.estimated_total||0),0);
+  const revenueToday  = done.reduce((s,j) => s + (j.total_price||0), 0);
+  const revenueMonth  = (monthJobs||[]).filter(j=>j.job_status==='done').reduce((s,j)=>s+(j.total_price||0),0);
   const abandoned     = (todayJobs||[]).filter(j=>j.job_status==='cancelled').length;
   const collectionRate = done.length ? Math.round((done.filter(j=>j.payment_method!=='cash_pickup'&&j.payment_method!=='cash_delivery').length / done.length)*100) : 0;
 
@@ -43,7 +43,7 @@ async function loadStats(shopId) {
     const n = j.service_name || 'Other';
     if (!svcMap[n]) svcMap[n] = { count: 0, revenue: 0 };
     svcMap[n].count++;
-    svcMap[n].revenue += j.estimated_total||0;
+    svcMap[n].revenue += j.total_price||0;
   });
   const topServices = Object.entries(svcMap).map(([name, v]) => ({ name, ...v }))
     .sort((a,b) => b.count - a.count).slice(0, 6);
