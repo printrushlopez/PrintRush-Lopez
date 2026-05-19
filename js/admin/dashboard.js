@@ -58,7 +58,7 @@ if (refreshBtn) {
   refreshBtn.addEventListener('click', async () => {
     refreshBtn.disabled = true;
     refreshBtn.textContent = 'Refreshing…';
-    await loadAdminStats();
+    await Promise.all([loadAdminStats(), loadPendingApplications()]);
     refreshBtn.disabled = false;
     refreshBtn.textContent = 'Refresh stats';
   });
@@ -188,5 +188,92 @@ if (sendEmailForm) {
   });
 }
 
+// ── Pending Shop Applications ──────────────────────────────────────────────────
+async function loadPendingApplications() {
+  const tbody = document.getElementById('applicationsTableBody');
+  if (!tbody) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('shop_applications')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:var(--space-3) 0;color:var(--text-muted);text-align:center;">No pending applications</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    data.forEach(app => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--border)';
+      
+      const proofHtml = app.proof_of_payment_url 
+        ? `<a href="${app.proof_of_payment_url}" target="_blank" style="color:var(--cyan);text-decoration:none;"><span class="icon icon-sm"><i data-lucide="external-link"></i></span> View Receipt</a>`
+        : '<span style="color:var(--text-muted);">None</span>';
+
+      tr.innerHTML = `
+        <td style="padding:var(--space-3) 0;font-weight:600;">${app.shop_name}</td>
+        <td style="padding:var(--space-3) 0;">${app.owner_email}<br><span style="font-size:11px;color:var(--text-muted);">${app.owner_phone}</span></td>
+        <td style="padding:var(--space-3) 0;text-transform:capitalize;">${app.plan}</td>
+        <td style="padding:var(--space-3) 0;">${proofHtml}</td>
+        <td style="padding:var(--space-3) 0;">
+          <button class="btn btn-outline approve-btn" data-id="${app.id}" style="padding:6px 12px;font-size:12px;">Approve</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if (window.lucide) window.lucide.createIcons();
+
+    // Attach approve handlers
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.closest('button').dataset.id;
+        await approveApplication(id, e.target.closest('button'));
+      });
+    });
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:var(--space-3) 0;color:var(--magenta);">Error loading applications: ${err.message}</td></tr>`;
+  }
+}
+
+async function approveApplication(appId, btnElement) {
+  const msgEl = document.getElementById('applicationMessage');
+  msgEl.textContent = '';
+  
+  if (!confirm('Are you sure you want to approve this application? This will create the shop, the owner account, and send them the setup email.')) {
+    return;
+  }
+
+  btnElement.disabled = true;
+  btnElement.textContent = 'Approving...';
+
+  try {
+    const { data, error } = await supabase.functions.invoke('approve-shop', {
+      body: { applicationId: appId }
+    });
+
+    if (error) throw error;
+
+    msgEl.textContent = `✅ Successfully approved! The shop was created and the owner was emailed their credentials.`;
+    msgEl.style.color = 'var(--cyan)';
+    
+    // Refresh lists
+    await Promise.all([loadAdminStats(), loadPendingApplications()]);
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent = `Error: ${err.message}`;
+    msgEl.style.color = 'var(--magenta)';
+    btnElement.disabled = false;
+    btnElement.textContent = 'Approve';
+  }
+}
+
 loadAdminStats();
+loadPendingApplications();
 

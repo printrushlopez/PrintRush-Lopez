@@ -73,6 +73,27 @@
     </section>
 
     <section class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Pending Shop Applications</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:var(--text-sm);">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);color:var(--text-muted);">
+              <th style="padding:var(--space-2) 0;">Shop Name</th>
+              <th style="padding:var(--space-2) 0;">Owner Email</th>
+              <th style="padding:var(--space-2) 0;">Plan</th>
+              <th style="padding:var(--space-2) 0;">Proof of Payment</th>
+              <th style="padding:var(--space-2) 0;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="applicationsTableBody">
+            <tr><td colspan="5" style="padding:var(--space-3) 0;color:var(--text-muted);">Loading applications...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="applicationMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:var(--space-6);">
       <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Shop Management</h3>
       <form id="createShopForm" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
         <div class="form-group">
