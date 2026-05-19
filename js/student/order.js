@@ -421,20 +421,20 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
       msgEl.textContent = 'Placing order…';
       const { data: job, error: jobErr } = await supabase.from('jobs').insert({
         shop_id:            state.shopId,
+        job_number:         Math.floor(10000 + Math.random() * 90000),
         service_id:         state.serviceId,
+        service_category:   state.serviceType || 'document',
+        service_name:       state.serviceName,
         customer_name:      state.custName,
-        customer_contact:   state.custContact || null,
         file_url:           storagePath,
-        page_count:         state.pages,
+        pages:              state.pages,
         copies:             state.copies,
         color_mode:         state.colorMode,
         paper_size:         state.paperSize,
-        print_side:         state.printSide,
         special_instructions: state.instructions || null,
-        payment_type:       state.paymentMethod,
+        payment_method:     state.paymentMethod,
         delivery_address:   state.deliveryAddr || null,
-        estimated_price:    state.estimatedTotal,
-        page_ranges:        state.pageRangeMode === 'custom' ? state.pageRangeStr : null,
+        total_price:        state.estimatedTotal,
         device_fingerprint: state.fingerprint,
         job_status:         'pending'
       }).select('id,job_number,job_token').single();
