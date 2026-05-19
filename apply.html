@@ -6,6 +6,8 @@
 <link rel="icon" href="/icons/icon.svg" type="image/svg+xml"/>
 <link rel="stylesheet" href="/css/tokens.css"/>
 <link rel="stylesheet" href="/css/components.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
   .apply-wrap { max-width: 600px; margin: 0 auto; padding: calc(var(--header-h) + var(--space-8)) var(--space-4) var(--space-16); }
@@ -42,15 +44,11 @@
         <label class="form-label" for="shopAddress">Complete Address</label>
         <input class="form-input" type="text" id="shopAddress" placeholder="123 Rizal St, Lopez, Quezon" required />
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
-        <div class="form-group">
-          <label class="form-label" for="shopLat">Latitude (Optional)</label>
-          <input class="form-input" type="number" id="shopLat" step="any" placeholder="13.8833" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="shopLng">Longitude (Optional)</label>
-          <input class="form-input" type="number" id="shopLng" step="any" placeholder="122.2667" />
-        </div>
+      <input type="hidden" id="shopLat" value="13.8824" />
+      <input type="hidden" id="shopLng" value="122.2687" />
+      <div class="form-group" style="margin-top:var(--space-4);">
+        <label class="form-label">Shop Geolocation (Pin your exact location on the map)</label>
+        <div id="pickerMap" style="height:250px;border-radius:var(--radius-lg);border:1px solid var(--border);position:relative;z-index:1;overflow:hidden;background:#000;"></div>
       </div>
     </div>
 

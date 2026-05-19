@@ -13,6 +13,80 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('planSelect').value = planParam;
   }
 
+  // Initialize Location Map Picker
+  let pickerMap = null;
+  let pickerMarker = null;
+
+  function initMap() {
+    const mapEl = document.getElementById('pickerMap');
+    if (!mapEl || !window.L) return;
+
+    const defaultLat = 13.8824;
+    const defaultLng = 122.2687;
+    const latInput = document.getElementById('shopLat');
+    const lngInput = document.getElementById('shopLng');
+
+    const LOPEZ_BOUNDS = [
+      [13.718, 122.172], // Southwest
+      [13.991, 122.400]  // Northeast
+    ];
+
+    pickerMap = L.map('pickerMap', {
+      maxBounds: LOPEZ_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      minZoom: 11
+    }).setView([defaultLat, defaultLng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(pickerMap);
+
+    const icon = L.divIcon({
+      className: 'picker-marker',
+      html: '<div style="background:var(--cyan);width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px var(--cyan);"></div>',
+      iconSize: [16, 16]
+    });
+
+    pickerMarker = L.marker([defaultLat, defaultLng], { icon, draggable: true }).addTo(pickerMap);
+
+    function updateCoords(lat, lng) {
+      latInput.value = lat.toFixed(6);
+      lngInput.value = lng.toFixed(6);
+    }
+
+    // Set initial values
+    updateCoords(defaultLat, defaultLng);
+
+    pickerMarker.on('dragend', () => {
+      const pos = pickerMarker.getLatLng();
+      updateCoords(pos.lat, pos.lng);
+    });
+
+    pickerMap.on('click', (e) => {
+      pickerMarker.setLatLng(e.latlng);
+      updateCoords(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Try auto locating the user/shop
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          // Check if user is inside Lopez bounds
+          const inside = latitude >= LOPEZ_BOUNDS[0][0] && latitude <= LOPEZ_BOUNDS[1][0] &&
+                         longitude >= LOPEZ_BOUNDS[0][1] && longitude <= LOPEZ_BOUNDS[1][1];
+          if (inside) {
+            pickerMap.setView([latitude, longitude], 16);
+            pickerMarker.setLatLng([latitude, longitude]);
+            updateCoords(latitude, longitude);
+          }
+        },
+        (err) => {
+          console.warn('Geolocation failed or denied:', err);
+        }
+      );
+    }
+  }
+
+  initMap();
+
   // Generate a URL-safe slug from shop name
   function generateSlug(name) {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
