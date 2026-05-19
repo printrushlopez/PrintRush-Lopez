@@ -903,8 +903,85 @@
             </div>
           </div>
         </div>
-        <div class="preview-card" style="padding:0; overflow:hidden; border-radius:var(--radius-2xl); box-shadow:var(--shadow-xl); transform: rotate(2deg); background: var(--surface);">
-          <img src="/img/desktop_agent_mockup.png" alt="PrintRUSH Desktop Agent Mockup" style="width:100%; height:auto; display:block;" />
+        <div class="agent-mockup-wrapper" style="perspective: 1000px; padding: 1rem; width: 100%;">
+          <div class="agent-mockup-window" style="
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            overflow: hidden;
+            transform: rotateY(-15deg) rotateX(4deg) translateZ(0);
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+          ">
+            <!-- Window Title Bar -->
+            <div style="background: var(--surface-alt); padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
+              <div class="cmyk-mark" style="width:16px;height:16px;position:relative;transform:none;animation:none;" aria-hidden="true">
+                <div class="dot dot-c" style="width:8px;height:8px;position:absolute;top:0;left:4px;"></div>
+                <div class="dot dot-m" style="width:8px;height:8px;position:absolute;bottom:0;left:0;"></div>
+                <div class="dot dot-y" style="width:8px;height:8px;position:absolute;bottom:0;right:0;"></div>
+              </div>
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; margin-left: 4px;">PrintRUSH Desktop Agent</span>
+            </div>
+            
+            <!-- Window Body -->
+            <div style="display: flex; height: 320px;">
+              <!-- Sidebar -->
+              <div style="width: 25%; background: var(--bg); border-right: 1px solid var(--border); padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="background: var(--cyan-10); color: var(--cyan); padding: 0.6rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="layout-dashboard" style="width: 14px; height: 14px;"></i> Queue
+                </div>
+                <div style="color: var(--text-muted); padding: 0.6rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Devices
+                </div>
+                <div style="color: var(--text-muted); padding: 0.6rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="settings" style="width: 14px; height: 14px;"></i> Settings
+                </div>
+              </div>
+              
+              <!-- Main Content -->
+              <div style="flex: 1; padding: 1.25rem; background: var(--surface);">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                  <div style="flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.8rem;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.25rem;">IN PROGRESS</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--cyan); font-family: var(--font-heading);">3</div>
+                  </div>
+                  <div style="flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.8rem;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.25rem;">WAITING</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--magenta); font-family: var(--font-heading);">8</div>
+                  </div>
+                  <div style="flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.8rem;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.25rem;">DONE TODAY</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--yellow); font-family: var(--font-heading);">42</div>
+                  </div>
+                </div>
+                
+                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 0.75rem;">Recent Jobs</div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <div style="background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--cyan); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <div style="font-size: 0.75rem; font-weight: 600; color: var(--text);">#1004 - Large Banner</div>
+                      <div style="font-size: 0.65rem; color: var(--text-faint); margin-top: 0.15rem;">Format: PDF • 1 Copy</div>
+                    </div>
+                    <span style="background: var(--cyan-10); color: var(--cyan); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">PRINTING</span>
+                  </div>
+                  <div style="background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--magenta); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <div style="font-size: 0.75rem; font-weight: 600; color: var(--text);">#1005 - Business Cards</div>
+                      <div style="font-size: 0.65rem; color: var(--text-faint); margin-top: 0.15rem;">Format: PNG • 50 Copies</div>
+                    </div>
+                    <span style="background: var(--magenta-10); color: var(--magenta); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">QUEUED</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <style>
+            .agent-mockup-wrapper:hover .agent-mockup-window {
+              transform: rotateY(0deg) rotateX(0deg) translateZ(0);
+              box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08) inset;
+            }
+          </style>
         </div>
       </div>
     </section>
