@@ -27,6 +27,7 @@
     "appId": "ph.lopez.printrush.agent",
     "productName": "PrintRUSH Desktop Agent",
     "copyright": "Copyright © 2025 PrintRUSH Lopez",
+    "icon": "icon.png",
     "win": {
       "target": "nsis"
     },
