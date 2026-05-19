@@ -180,16 +180,7 @@
       />
       <p class="hint">📧 This was emailed to you when your shop was approved by PrintRUSH.</p>
 
-      <label for="supabaseKey">Supabase Anon Key</label>
-      <input
-        type="text"
-        id="supabaseKey"
-        placeholder="eyJhbGci..."
-        autocomplete="off"
-        spellcheck="false"
-        required
-      />
-      <p class="hint">🔑 Also included in your approval email. This never expires.</p>
+
 
       <button type="submit" class="btn" id="connectBtn">Connect My Shop →</button>
     </form>
@@ -209,7 +200,6 @@
       const errorBox  = document.getElementById('errorBox');
       const btn       = document.getElementById('connectBtn');
       const shopId    = document.getElementById('shopId').value.trim();
-      const supabaseKey = document.getElementById('supabaseKey').value.trim();
 
       errorBox.style.display = 'none';
 
@@ -218,16 +208,11 @@
         errorBox.style.display = 'block';
         return;
       }
-      if (!supabaseKey || supabaseKey.length < 20) {
-        errorBox.textContent = 'Please enter a valid Supabase Anon Key.';
-        errorBox.style.display = 'block';
-        return;
-      }
 
       btn.disabled = true;
       btn.textContent = 'Connecting…';
 
-      const result = await ipcRenderer.invoke('save-config', { shopId, supabaseKey });
+      const result = await ipcRenderer.invoke('save-config', { shopId });
 
       if (!result.success) {
         errorBox.textContent = result.error || 'Something went wrong. Please try again.';

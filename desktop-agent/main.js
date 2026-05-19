@@ -12,11 +12,13 @@ const { autoUpdater }   = require('electron-updater');
 let Store;
 try { Store = require('electron-store'); } catch { Store = require('electron-store').default; }
 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvdnNhZHFtd25qc3NyY3h2YWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY5ODQsImV4cCI6MjA5MzM3Mjk4NH0.CTvIOe1CD74SfFKd6NrEApZm_ud0EIpRnlb0rtPHbpc';
+
 const store = new Store({
   schema: {
     shopId:       { type: 'string', default: '' },
     supabaseUrl:  { type: 'string', default: 'https://iovsadqmwnjssrcxvagu.supabase.co' },
-    supabaseKey:  { type: 'string', default: '' },
+    supabaseKey:  { type: 'string', default: SUPABASE_ANON_KEY },
     appUrl:       { type: 'string', default: 'https://print-rush-lopez.vercel.app' },
     btFolder:     { type: 'string', default: 'C:\\Users\\Public\\Downloads' }
   }
@@ -28,7 +30,7 @@ let setupWindow = null;
 
 // ── First-Run check ────────────────────────────────────────────────────────────
 function isConfigured() {
-  return store.get('shopId', '').length > 0 && store.get('supabaseKey', '').length > 0;
+  return store.get('shopId', '').length > 0;
 }
 
 // ── Setup Window (shown on first launch) ──────────────────────────────────────
@@ -180,7 +182,6 @@ if (!gotTheLock) {
 ipcMain.handle('save-config', async (event, config) => {
   try {
     store.set('shopId',      config.shopId.trim());
-    store.set('supabaseKey', config.supabaseKey.trim());
     // Optional overrides
     if (config.appUrl)    store.set('appUrl',    config.appUrl.trim());
     if (config.btFolder)  store.set('btFolder',  config.btFolder.trim());
