@@ -315,9 +315,19 @@ function renderShops() {
     
     const specialtyLabels = {
       documents: 'Documents',
-      clothing: 'Clothing',
+      business: 'Business Print',
+      marketing: 'Marketing',
       large_format: 'Large Format',
-      business: 'Business'
+      binding: 'Binding',
+      lamination: 'Lamination',
+      finishing: 'Finishing',
+      apparel: 'Apparel',
+      clothing: 'Apparel',
+      novelty: 'Novelty Items',
+      photo: 'Photo Services',
+      specialty: 'Specialty Print',
+      design: 'Design Services',
+      value_added: 'Value-Added'
     };
 
     const specialtyHtml = shop.specialties && shop.specialties.length > 0

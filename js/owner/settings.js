@@ -200,10 +200,13 @@ function buildSettingsHTML(shop) {
           {id:'large_format', name:'Large Format'},
           {id:'binding', name:'Binding'},
           {id:'lamination', name:'Lamination'},
-          {id:'apparel', name:'Clothing'},
+          {id:'finishing', name:'Finishing Services'},
+          {id:'apparel', name:'Clothing / Apparel'},
           {id:'novelty', name:'Novelty Items'},
           {id:'photo', name:'Photo Services'},
-          {id:'design', name:'Design Services'}
+          {id:'specialty', name:'Specialty Print'},
+          {id:'design', name:'Design Services'},
+          {id:'value_added', name:'Value-Added'}
         ].map(spec => `
           <label style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);cursor:pointer;">
             <input type="checkbox" name="specialty" value="${spec.id}" ${shop?.specialties?.includes(spec.id) ? 'checked' : ''}/>
