@@ -1,10 +1,9 @@
-require('dotenv').config();
 const chokidar = require('chokidar');
 const path = require('path');
 const fs = require('fs');
 
-function startWatching(onFileReceived) {
-  const watchFolder = process.env.BLUETOOTH_FOLDER || 'C:\\Users\\Public\\Downloads';
+function startWatching(watchFolder, onFileReceived) {
+  if (!watchFolder) watchFolder = 'C:\\Users\\Public\\Downloads';
   
   if (!fs.existsSync(watchFolder)) {
     try {

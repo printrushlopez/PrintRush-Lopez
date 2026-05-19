@@ -156,7 +156,7 @@ if (!gotTheLock) {
   } else {
     // Already configured: load portal directly
     createMainWindow();
-    startWatching((fileInfo) => {
+    startWatching(store.get('btFolder'), (fileInfo) => {
       mainWindow.webContents.send('bluetooth-file-received', fileInfo);
       mainWindow.show();
     });
@@ -189,7 +189,7 @@ ipcMain.handle('save-config', async (event, config) => {
     setupWindow?.close();
     createMainWindow();
 
-    startWatching((fileInfo) => {
+    startWatching(store.get('btFolder'), (fileInfo) => {
       mainWindow.webContents.send('bluetooth-file-received', fileInfo);
       mainWindow.show();
     });
