@@ -129,8 +129,26 @@ function createTray() {
 }
 
 // ── App ready ──────────────────────────────────────────────────────────────────
-app.whenReady().then(() => {
-  createTray();
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    } else if (setupWindow) {
+      if (setupWindow.isMinimized()) setupWindow.restore();
+      setupWindow.show();
+      setupWindow.focus();
+    }
+  });
+
+  app.whenReady().then(() => {
+    createTray();
 
   if (!isConfigured()) {
     // First run: show setup screen
@@ -151,11 +169,12 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    // Keep alive in tray — do NOT quit
-  }
-});
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      // Keep alive in tray — do NOT quit
+    }
+  });
+}
 
 // ── IPC: Setup form saves config and launches portal ──────────────────────────
 ipcMain.handle('save-config', async (event, config) => {

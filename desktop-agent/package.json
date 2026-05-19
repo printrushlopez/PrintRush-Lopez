@@ -28,7 +28,7 @@
     "productName": "PrintRUSH Desktop Agent",
     "copyright": "Copyright © 2025 PrintRUSH Lopez",
     "win": {
-      "target": "portable"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": false,
