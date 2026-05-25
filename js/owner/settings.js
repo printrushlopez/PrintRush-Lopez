@@ -101,19 +101,81 @@ async function init() {
       return;
     }
 
-    // NO SHOP OWNER FOUND
-    if (!data) {
-      document.body.innerHTML = `
-        <div style="padding:20px;color:white;background:#111;">
-          No shop owner record found for this account.
-          <br><br>
-          User ID:
-          <br>
-          ${auth.user.id}
-        </div>
-      `;
-      return;
-    }
+  // NO SHOP OWNER FOUND → AUTO CREATE SHOP
+if (!data) {
+
+  console.log('No shop found. Creating new shop...');
+
+  const emailPrefix =
+    auth.user.email?.split('@')[0] || 'shop';
+
+  const slug =
+    emailPrefix.toLowerCase().replace(/[^a-z0-9]/g, '-') +
+    '-' +
+    Math.floor(Math.random() * 9999);
+
+  // 1. CREATE SHOP
+  const { data: newShop, error: shopError } = await supabase
+    .from('shops')
+    .insert({
+      name: `${emailPrefix}'s Print Shop`,
+      slug,
+      address: 'Lopez, Quezon',
+      approval_mode: false,
+      delivery_fee_metro: 50,
+      delivery_fee_province: 100,
+      open_time: '07:00',
+      close_time: '17:00',
+      is_active: true
+    })
+    .select()
+    .single();
+
+  if (shopError) {
+    console.error(shopError);
+
+    document.body.innerHTML = `
+      <div style="padding:20px;color:red;">
+        Failed creating shop:
+        <br><br>
+        ${shopError.message}
+      </div>
+    `;
+
+    return;
+  }
+
+  // 2. LINK OWNER TO SHOP
+  const { error: ownerError } = await supabase
+    .from('shop_owners')
+    .insert({
+      shop_id: newShop.id,
+      user_id: auth.user.id,
+      role: 'owner'
+    });
+
+  if (ownerError) {
+    console.error(ownerError);
+
+    document.body.innerHTML = `
+      <div style="padding:20px;color:red;">
+        Failed creating owner:
+        <br><br>
+        ${ownerError.message}
+      </div>
+    `;
+
+    return;
+  }
+
+  console.log('Shop auto-created successfully');
+
+  state.shopId = newShop.id;
+  state.shopData = newShop;
+  state.shopSlug = newShop.slug;
+
+  shopName = newShop.name;
+}
 
     state.shopId = data.shop_id;
     state.shopData = data.shops;
