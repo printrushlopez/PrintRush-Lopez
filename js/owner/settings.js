@@ -335,7 +335,7 @@ function buildSettingsHTML(shop) {
             ${buildTimePicker('closeTime', shop?.close_time || '17:00', 'Closes at')}
           </div>
         </div>
-      
+      </div>
       <button class="btn btn-primary" id="saveProfileBtn" style="margin-top:var(--space-4);">
         <span class="icon icon-sm"><i data-lucide="save"></i></span> Save Profile
       </button>
