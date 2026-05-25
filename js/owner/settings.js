@@ -51,7 +51,7 @@ async function init() {
   if (auth.demo) {
     const d=JSON.parse(localStorage.getItem('printrush-demo-owner')||'{}');
     userEmail=d.email||'demo@shop.com'; shopName=d.shopName||'Demo Shop';
-    state.shopData = { name: shopName, slug: 'demo-shop', address: 'Lopez, Quezon', approval_mode: false, delivery_metro: 50, delivery_provincial: 100 };
+    state.shopData = { name: shopName, slug: 'demo-shop', address: 'Lopez, Quezon', approval_mode: false, delivery_fee_metro: 50, delivery_fee_province: 100, open_time: '07:00', close_time: '17:00' };
     state.shopSlug = 'demo-shop';
   } else {
     const {data}=await supabase.from('shop_owners')
@@ -147,11 +147,15 @@ function buildSettingsHTML(shop) {
         </div>
         <div class="form-group">
           <label class="form-label" for="shopPhone">Phone / Contact</label>
-          <input class="form-input" type="tel" id="shopPhone" value="${shop?.phone||''}" placeholder="09XXXXXXXXX"/>
+          <input class="form-input" type="tel" id="shopPhone" value="${shop?.owner_phone||''}" placeholder="09XXXXXXXXX"/>
         </div>
         <div class="form-group">
-          <label class="form-label" for="shopHours">Business Hours</label>
-          <input class="form-input" type="text" id="shopHours" value="${shop?.hours||''}" placeholder="Mon–Sat 7AM–8PM"/>
+          <label class="form-label">Business Hours</label>
+          <div style="display:flex;align-items:center;gap:var(--space-2);">
+            ${buildTimePicker('openTime', shop?.open_time||'07:00', 'Opens at')}
+            <span style="color:var(--text-muted);font-size:var(--text-sm);flex-shrink:0;">to</span>
+            ${buildTimePicker('closeTime', shop?.close_time||'17:00', 'Closes at')}
+          </div>
         </div>
       </div>
       <button class="btn btn-primary" id="saveProfileBtn" style="margin-top:var(--space-4);">
@@ -271,11 +275,11 @@ function buildSettingsHTML(shop) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
         <div class="form-group">
           <label class="form-label" for="deliveryMetro">Metro / Within Quezon (₱)</label>
-          <input class="form-input" type="number" id="deliveryMetro" value="${shop?.delivery_metro||50}" min="0"/>
+          <input class="form-input" type="number" id="deliveryMetro" value="${shop?.delivery_fee_metro||50}" min="0"/>
         </div>
         <div class="form-group">
           <label class="form-label" for="deliveryProvincial">Provincial (₱)</label>
-          <input class="form-input" type="number" id="deliveryProvincial" value="${shop?.delivery_provincial||100}" min="0"/>
+          <input class="form-input" type="number" id="deliveryProvincial" value="${shop?.delivery_fee_province||100}" min="0"/>
         </div>
       </div>
       <button class="btn btn-primary btn-sm" id="saveDeliveryBtn" style="margin-top:var(--space-4);">Save Delivery Fees</button>
@@ -385,21 +389,22 @@ function drawQRPlaceholder(canvas, url) {
 function wireEvents() {
   // Save profile
   document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
-    const name    = document.getElementById('shopName').value.trim();
-    const slug    = document.getElementById('shopSlug').value.trim().toLowerCase().replace(/\s+/g,'-');
-    const address = document.getElementById('shopAddress').value.trim();
-    const phone   = document.getElementById('shopPhone').value.trim();
-    const hours   = document.getElementById('shopHours').value.trim();
-    const msgEl   = document.getElementById('profileMsg');
+    const name       = document.getElementById('shopName').value.trim();
+    const slug       = document.getElementById('shopSlug').value.trim().toLowerCase().replace(/\s+/g,'-');
+    const address    = document.getElementById('shopAddress').value.trim();
+    const owner_phone = document.getElementById('shopPhone').value.trim();
+    const open_time  = getTimeValue('openTime');
+    const close_time = getTimeValue('closeTime');
+    const msgEl      = document.getElementById('profileMsg');
 
     if (state.demo) {
-      state.shopData = { ...state.shopData, name, slug, address, phone, hours };
+      state.shopData = { ...state.shopData, name, slug, address, owner_phone, open_time, close_time };
       state.shopSlug = slug;
       localStorage.setItem('printrush-demo-owner', JSON.stringify({ email: '', shopName: name }));
       showMsg('profileMsg', 'Profile saved (demo)', 'success'); generateQR(); return;
     }
 
-    const { error } = await supabase.from('shops').update({ name, slug, address, phone, hours }).eq('id', state.shopId);
+    const { error } = await supabase.from('shops').update({ name, slug, address, owner_phone, open_time, close_time }).eq('id', state.shopId);
     if (error) { showMsg('profileMsg', error.message, 'error'); return; }
     state.shopSlug = slug;
     showMsg('profileMsg', 'Profile saved!', 'success');
@@ -456,7 +461,7 @@ function wireEvents() {
     const metro      = parseFloat(document.getElementById('deliveryMetro').value)||50;
     const provincial = parseFloat(document.getElementById('deliveryProvincial').value)||100;
     if (state.demo) { showMsg('deliveryMsg', 'Delivery fees saved (demo)', 'success'); return; }
-    const { error } = await supabase.from('shops').update({ delivery_metro: metro, delivery_provincial: provincial }).eq('id', state.shopId);
+    const { error } = await supabase.from('shops').update({ delivery_fee_metro: metro, delivery_fee_province: provincial }).eq('id', state.shopId);
     if (error) showMsg('deliveryMsg', error.message, 'error');
     else showMsg('deliveryMsg', 'Delivery fees updated!', 'success');
   });
@@ -470,6 +475,44 @@ function wireEvents() {
     if (error) showMsg('passwordMsg', error.message, 'error');
     else { showMsg('passwordMsg', 'Password updated!', 'success'); document.getElementById('newPassword').value=''; }
   });
+}
+
+/* ── Time Picker Helper ── */
+function buildTimePicker(id, value, label) {
+  // value is 'HH:MM' in 24h format
+  const [h24, m] = (value || '07:00').split(':').map(Number);
+  const isPM = h24 >= 12;
+  const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+
+  const hours = Array.from({length:12},(_,i)=>i+1).map(h =>
+    `<option value="${h}" ${h===h12?'selected':''}>${h}</option>`
+  ).join('');
+
+  const mins = ['00','15','30','45'].map(mm =>
+    `<option value="${mm}" ${mm===String(m).padStart(2,'0')?'selected':''}>${mm}</option>`
+  ).join('');
+
+  const selectStyle = 'background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);padding:6px 8px;font-size:var(--text-sm);cursor:pointer;';
+  return `
+    <div style="display:flex;align-items:center;gap:4px;">
+      <select id="${id}Hour" style="${selectStyle}" aria-label="${label} hour">${hours}</select>
+      <span style="color:var(--text-muted);font-weight:bold;">:</span>
+      <select id="${id}Min" style="${selectStyle}" aria-label="${label} minute">${mins}</select>
+      <select id="${id}Period" style="${selectStyle}" aria-label="${label} AM/PM">
+        <option value="AM" ${!isPM?'selected':''}>AM</option>
+        <option value="PM" ${isPM?'selected':''}>PM</option>
+      </select>
+    </div>`;
+}
+
+function getTimeValue(id) {
+  const h = parseInt(document.getElementById(id+'Hour')?.value||'7',10);
+  const m = document.getElementById(id+'Min')?.value||'00';
+  const p = document.getElementById(id+'Period')?.value||'AM';
+  let h24 = h;
+  if (p==='AM' && h===12) h24 = 0;
+  else if (p==='PM' && h!==12) h24 = h + 12;
+  return String(h24).padStart(2,'0') + ':' + m;
 }
 
 function showMsg(id, msg, type) {
