@@ -66,7 +66,7 @@ async function init() {
       delivery_fee_metro: 50,
       delivery_fee_province: 100,
       open_time: '07:00',
-      close_time: '17:00'
+      close_time: '17:00',
       week_schedule: 'Mon-Fri'
     };
 
@@ -325,7 +325,8 @@ function buildSettingsHTML(shop) {
                 `
                  ).join('')}
             </select>
-            
+           </div>
+         </div>
         <div class="form-group">
           <label class="form-label">Business Hours</label>
           <div style="display:flex;align-items:center;gap:var(--space-2);">
@@ -334,7 +335,7 @@ function buildSettingsHTML(shop) {
             ${buildTimePicker('closeTime', shop?.close_time || '17:00', 'Closes at')}
           </div>
         </div>
-      </div>
+      
       <button class="btn btn-primary" id="saveProfileBtn" style="margin-top:var(--space-4);">
         <span class="icon icon-sm"><i data-lucide="save"></i></span> Save Profile
       </button>
