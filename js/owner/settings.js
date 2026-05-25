@@ -280,47 +280,52 @@ function buildSettingsHTML(shop) {
           <input class="form-input" type="tel" id="shopPhone" value="${shop?.owner_phone || ''}" placeholder="09XXXXXXXXX"/>
         </div>
         <div class="form-group">
+            <label class="form-label"> Business Schedule </label>
+            
+            <div
+              style="
+                display:flex;
+                flex-direction:column;
+                gap:var(--space-3);
+              "
+           >
 
-          <label class="form-label">
-            Business Schedule
-          </label>
-
-          <div
-            style="
-              display:flex;
-              flex-direction:column;
-              gap:var(--space-3);
-            "
-          >
-
-            <!-- WEEK SCHEDULE -->
-            <select
-              class="form-select"
-              id="weekSchedule"
-              style="max-width:220px;"
-            >
-              ${[
-                'Mon-Fri',
-                'Mon-Sat',
-                'Mon-Sun',
-                'Tue-Sun',
-                'Weekends',
-                'Custom'
-              ].map(day => `
-                <option
-                  value="${day}"
-                    ${(shop?.week_schedule || 'Mon-Fri') === day
-                    ? 'selected'
-                    : ''}
+             <!-- WEEK SCHEDULE -->
+             <select
+               class="form-select"
+               id="weekSchedule"
+               style="max-width:220px;"
+             >
+               ${[
+                 'Mon-Fri',
+                 'Mon-Sat',
+                 'Mon-Sun',
+                 'Tue-Sun',
+                 'Weekends',
+                 'Custom'
+               ]
+                 .map(
+                   day => `
+                 <option
+                   value="${day}"
+                   ${
+                      (shop?.week_schedule || 'Mon-Fri') === day
+                        ? 'selected'
+                        : ''
+                   }
                 >
-                  ${day === 'Weekends'
-                    ? 'Weekends Only'
-                    : day === 'Custom'
-                    ? 'Custom Schedule'
-                    : day}
+                  ${
+                     day === 'Weekends'
+                       ? 'Weekends Only'
+                       : day === 'Custom'
+                       ? 'Custom Schedule'
+                       : day
+                  }
                 </option>
-              `).join('')}
+                `
+                 ).join('')}
             </select>
+            
         <div class="form-group">
           <label class="form-label">Business Hours</label>
           <div style="display:flex;align-items:center;gap:var(--space-2);">
