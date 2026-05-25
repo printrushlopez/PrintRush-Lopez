@@ -1,4 +1,4 @@
-```js
+
 /* PrintRUSH Lopez — Owner Services CRUD JS */
 
 import { supabase } from '../lib/supabase.js';
@@ -722,4 +722,3 @@ function toast(msg, type = 'success') {
 }
 
 init();
-```
