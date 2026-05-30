@@ -1306,9 +1306,11 @@
     const downloadAgentIcon = document.getElementById('downloadAgentIcon');
 
     if (downloadAgentBtn) {
-      // 1. Set a reliable default direct download URL immediately (no API wait needed)
-      downloadAgentBtn.href = 'https://github.com/printrushlopez/PrintRush-Lopez/releases/latest/download/PrintRUSH.Desktop.Agent.Setup.1.0.0.exe';
-      downloadAgentBtn.setAttribute('download', 'PrintRUSH.Desktop.Agent.Setup.1.0.0.exe');
+      // 1. Default to the releases page while we wait for the API to return the exact asset URL
+      downloadAgentBtn.href = 'https://github.com/printrushlopez/PrintRush-Lopez/releases/latest';
+      downloadAgentBtn.removeAttribute('download');
+      downloadAgentBtn.setAttribute('target', '_blank');
+
 
       // 2. Fetch the latest release to display the dynamic version number and get the exact filename
       fetch('https://api.github.com/repos/printrushlopez/PrintRush-Lopez/releases/latest')
