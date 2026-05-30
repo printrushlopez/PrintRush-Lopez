@@ -6,7 +6,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "pack": "electron-packager . PrintRUSH-Agent --platform=win32 --arch=x64 --out=dist --overwrite --ignore=node_modules/electron-builder --ignore=node_modules/@electron/packager --ignore=dist",
+    "pack": "electron-packager . PrintRUSH-Agent --platform=win32 --arch=x64 --out=dist --overwrite --no-asar --ignore=\"^/dist$\" --ignore=node_modules/electron-builder --ignore=node_modules/@electron/packager",
     "build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win",
     "build:publish": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win --publish always"
   },
