@@ -41,34 +41,73 @@ async function loadQueue() {
   const list = document.getElementById('queueList');
   if (!supabaseClient) return;
   
+  // Fetch active and recent done jobs to calculate stats
+  // Let's fetch all jobs from the last 24 hours to cover "today" + active ones
+  const oneDayAgo = new Date();
+  oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
   const { data, error } = await supabaseClient
     .from('jobs')
     .select('*')
     .eq('shop_id', shopId)
-    .in('job_status', ['pending', 'processing'])
+    .or(`job_status.in.(pending,processing),created_at.gte.${oneDayAgo.toISOString()}`)
     .order('created_at', { ascending: false });
 
   if (error) {
+    console.error('[PrintRUSH] Error fetching jobs:', error);
     list.innerHTML = `<div style="color:var(--magenta)">Error loading queue: ${error.message}</div>`;
     return;
   }
 
-  if (!data || data.length === 0) {
+  // Filter jobs for stats
+  const inProgressJobs = data.filter(job => job.job_status === 'processing');
+  const waitingJobs = data.filter(job => job.job_status === 'pending');
+  
+  // Done today (today in local time)
+  const todayStr = new Date().toDateString();
+  const doneTodayJobs = data.filter(job => job.job_status === 'done' && new Date(job.created_at).toDateString() === todayStr);
+
+  // Update Stats UI
+  document.getElementById('statInProgress').textContent = inProgressJobs.length;
+  document.getElementById('statWaiting').textContent = waitingJobs.length;
+  document.getElementById('statDone').textContent = doneTodayJobs.length;
+
+  // Filter jobs to display in "Recent Jobs" list (only active jobs: pending, processing)
+  const activeJobs = data.filter(job => ['pending', 'processing'].includes(job.job_status));
+
+  if (activeJobs.length === 0) {
     list.innerHTML = `<div style="color:var(--text-muted);font-size:14px;font-style:italic;">Queue is currently empty.</div>`;
     return;
   }
 
-  list.innerHTML = data.map(job => `
-    <div class="mirror-item">
-      <div>
-        <div style="font-weight:bold;color:var(--cyan)">#${job.job_number}</div>
-        <div style="font-size:12px;color:var(--text-muted)">Walk-in • ${job.service_name || 'Document'}</div>
+  list.innerHTML = activeJobs.map(job => {
+    const isPrinting = job.job_status === 'processing';
+    const borderClass = isPrinting ? 'cmyk-c' : 'cmyk-m';
+    const badgeClass = isPrinting ? 'cyan' : 'magenta';
+    const statusText = isPrinting ? 'PRINTING' : 'QUEUED';
+    
+    // Extract format from file url if available
+    let formatText = 'PDF';
+    if (job.file_url) {
+      const parts = job.file_url.split('?')[0].split('.');
+      if (parts.length > 1) {
+        formatText = parts.pop().toUpperCase();
+      }
+    }
+    
+    const pagesText = job.pages ? `${job.pages} Page${job.pages > 1 ? 's' : ''}` : '1 Page';
+    const copiesText = job.copies ? `${job.copies} Cop${job.copies > 1 ? 'ies' : 'y'}` : '1 Copy';
+    
+    return `
+      <div class="job-card-custom ${borderClass}">
+        <div class="job-info">
+          <div class="job-name">#${job.job_number} - ${job.service_name || 'Document Print'}</div>
+          <div class="job-meta">Format: ${formatText} • ${pagesText} • ${copiesText}</div>
+        </div>
+        <span class="badge-custom ${badgeClass}">${statusText}</span>
       </div>
-      <div>
-        <span class="badge ${job.job_status === 'pending' ? 'badge-yellow' : 'badge-cyan'}">${job.job_status.toUpperCase()}</span>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function subscribeQueue() {
