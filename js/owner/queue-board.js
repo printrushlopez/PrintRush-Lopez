@@ -2,29 +2,33 @@
    Features: Live kanban, Supabase Realtime, status advancement,
    device ban, approval modal, push notification on status change */
 
-import { supabase }              from '../lib/supabase.js';
-import { isConfigured }          from '../config.js';
-import { requireAuth, signOut }  from './auth.js';
+import { supabase } from '../lib/supabase.js';
+import { isConfigured } from '../config.js';
+import { requireAuth, signOut } from './auth.js';
 import { renderLayout, getContentEl } from './layout.js';
 import { createBooking } from '../lib/shipmates.js';
 
 
 const COLUMNS = [
-  { key: 'pending',    label: 'Pending',    nextStatus: 'processing', nextLabel: 'Start Processing', icon: 'clock' },
-  { key: 'processing', label: 'Processing', nextStatus: 'ready',      nextLabel: 'Mark Ready',       icon: 'loader' },
-  { key: 'ready',      label: 'Ready',      nextStatus: 'done',       nextLabel: 'Mark Done',        icon: 'check-circle' },
-  { key: 'done',       label: 'Done',       nextStatus: null,         nextLabel: null,               icon: 'check-check' },
+  { key: 'pending', label: 'Pending', nextStatus: 'processing', nextLabel: 'Start Processing', icon: 'clock' },
+  { key: 'processing', label: 'Processing', nextStatus: 'ready', nextLabel: 'Mark Ready', icon: 'loader' },
+  { key: 'ready', label: 'Ready', nextStatus: 'done', nextLabel: 'Mark Done', icon: 'check-circle' },
+  { key: 'done', label: 'Done', nextStatus: null, nextLabel: null, icon: 'check-check' },
 ];
 
-const PAYMENT_LABELS = { gcash:'GCash', maya:'Maya', cash_pickup:'Cash Pickup', cash_delivery:'Cash Delivery', walk_in:'Walk-in' };
-const COLOR_LABELS   = { bw:'B&W', color:'Color' };
+const PAYMENT_LABELS = { gcash: 'GCash', maya: 'Maya', cash_pickup: 'Cash Pickup', cash_delivery: 'Cash Delivery', walk_in: 'Walk-in' };
+const COLOR_LABELS = { bw: 'B&W', color: 'Color' };
 
 let state = { jobs: [], shopId: null, shopSlug: null };
 let btFile = null;
 
 function handleElectronBridge() {
   if (window.electronAPI) {
-    window.electronAPI.onBluetoothFile((file) => {
+    // Show "Agent Active" badge
+    const agentStatus = document.getElementById('agentStatus');
+    if (agentStatus) agentStatus.style.display = 'flex';
+
+    window.electronAPI.onBluetoothFileReceived((file) => {
       btFile = file;
       const banner = document.getElementById('btBanner');
       if (banner) {
@@ -43,9 +47,9 @@ async function init() {
   const { data: ownerData } = await supabase.from('shop_owners')
     .select('shop_id, shops(name,slug)').eq('user_id', auth.user.id).single();
   if (ownerData) {
-    state.shopId   = ownerData.shop_id;
+    state.shopId = ownerData.shop_id;
     state.shopSlug = ownerData.shops?.slug;
-    shopName       = ownerData.shops?.name || shopName;
+    shopName = ownerData.shops?.name || shopName;
   }
 
   // Render sidebar layout
@@ -62,8 +66,10 @@ async function init() {
   // Realtime subscription
   if (isConfigured()) {
     supabase.channel('queue-board')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs',
-          filter: state.shopId ? `shop_id=eq.${state.shopId}` : undefined },
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'jobs',
+        filter: state.shopId ? `shop_id=eq.${state.shopId}` : undefined
+      },
         () => loadJobs())
       .subscribe();
   }
@@ -169,17 +175,17 @@ async function loadJobs() {
   let q = supabase.from('jobs').select('*').order('created_at', { ascending: true });
   if (state.shopId) q = q.eq('shop_id', state.shopId);
   // Only load today + pending/processing/ready
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
   q = q.or(`job_status.in.(pending,processing,ready),created_at.gte.${todayStart.toISOString()}`);
   const { data, error } = await q.limit(200);
   if (error) { console.error('Queue load error:', error); return; }
   state.jobs = data || [];
   renderBoard();
-  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
 }
 
 function renderBoard() {
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
   COLUMNS.forEach(col => {
     const colJobs = col.key === 'done'
       ? state.jobs.filter(j => j.job_status === 'done' && new Date(j.created_at) >= todayStart)
@@ -229,7 +235,7 @@ function buildJobCard(job, col) {
     ? `<button class="btn-xs advance" data-job-id="${job.id}" title="${col.nextLabel}">${col.nextLabel}</button>`
     : '';
   const banBtn = `<button class="btn-xs danger" data-ban="${job.device_fingerprint}" data-job-id="${job.id}" title="Ban this device">Ban Device</button>`;
-  const printBtn = (window.electronAPI && job.file_path)
+  const printBtn = (window.electronAPI && job.file_url)
     ? `<button class="btn-xs print" data-job-id="${job.id}" title="Print Directly"><span class="icon icon-xs" style="width:12px;height:12px;"><i data-lucide="printer"></i></span> Print</button>`
     : '';
 
@@ -244,8 +250,8 @@ function buildJobCard(job, col) {
       <div class="job-card-meta">
         ${payBadge}
         ${colorBadge}
-        <span class="badge badge-sm" style="background:var(--surface);border:1px solid var(--border);">₱${(job.total_price||0).toFixed(0)}</span>
-        ${job.pages ? `<span style="font-size:10px;color:var(--text-faint);">${job.pages}p × ${job.copies||1}</span>` : ''}
+        <span class="badge badge-sm" style="background:var(--surface);border:1px solid var(--border);">₱${(job.total_price || 0).toFixed(0)}</span>
+        ${job.pages ? `<span style="font-size:10px;color:var(--text-faint);">${job.pages}p × ${job.copies || 1}</span>` : ''}
       </div>
       <div class="job-card-actions">
         ${printBtn}
@@ -280,10 +286,10 @@ async function banDevice(fingerprint, jobId) {
   if (!fingerprint || fingerprint === 'unknown') { toast('No device fingerprint on this job', 'error'); return; }
   if (!confirm('Ban this device? They will not be able to submit new jobs to your shop.')) return;
   const { error } = await supabase.from('device_bans').insert({
-    device_fingerprint: fingerprint,
-    shop_id:            state.shopId,
-    reason:             'Banned by shop owner via queue board',
-    banned_at:          new Date().toISOString()
+    fingerprint: fingerprint,
+    shop_id: state.shopId,
+    reason: 'Banned by shop owner via queue board',
+    banned_at: new Date().toISOString()
   });
   if (error && !error.message.includes('duplicate')) {
     toast('Ban failed: ' + error.message, 'error'); return;
@@ -298,8 +304,8 @@ async function notifyCustomer(job) {
     if (subs && subs.length > 0) {
       // In production: call Supabase Edge Function to send web push
       const { data, error } = await supabase.functions.invoke('notify-push', {
-        body: { 
-          jobId: job.id, 
+        body: {
+          jobId: job.id,
           target: 'customer',
           title: 'PrintRUSH: Order Ready!',
           message: `Your order #${job.job_number} is now ready for pickup.`
@@ -308,7 +314,7 @@ async function notifyCustomer(job) {
       if (error) console.error('Push notification edge function error:', error);
       else console.log(`Push notification sent for job ${job.job_number}`, data);
     }
-  } catch(e) { console.warn('Push notification error:', e); }
+  } catch (e) { console.warn('Push notification error:', e); }
 }
 
 function openModal(jobId) {
@@ -319,26 +325,26 @@ function openModal(jobId) {
   document.getElementById('modalTitle').textContent = `Job #${job.job_number}`;
 
   const fields = [
-    ['Customer',        job.customer_name || '—'],
-    ['Contact',         job.customer_contact || '—'],
-    ['Service',         job.service_name || '—'],
-    ['Pages × Copies',  `${job.pages || '—'} × ${job.copies || 1}`],
-    ['Page Range',      job.page_ranges || 'All pages'],
-    ['Color Mode',      COLOR_LABELS[job.color_mode] || 'B&W'],
-    ['Paper Size',      job.paper_size || 'A4'],
-    ['Print Side',      job.print_side || 'Single-sided'],
-    ['Special Notes',   job.special_notes || '—'],
-    ['Payment',         PAYMENT_LABELS[job.payment_method] || job.payment_method],
-    ['Total Price', `₱${(job.total_price||0).toFixed(2)}`],
-    ['Status',          job.job_status.charAt(0).toUpperCase() + job.job_status.slice(1)],
-    ['Submitted',       new Date(job.created_at).toLocaleString('en-PH')],
-    ['Job Token',       `<code style="font-size:10px;">${job.job_token || '—'}</code>`],
+    ['Customer', job.customer_name || '—'],
+    ['Contact', job.customer_contact || '—'],
+    ['Service', job.service_name || '—'],
+    ['Pages × Copies', `${job.pages || '—'} × ${job.copies || 1}`],
+    ['Page Range', job.page_ranges || 'All pages'],
+    ['Color Mode', COLOR_LABELS[job.color_mode] || 'B&W'],
+    ['Paper Size', job.paper_size || 'A4'],
+    ['Print Side', job.print_side || 'Single-sided'],
+    ['Special Notes', job.special_notes || '—'],
+    ['Payment', PAYMENT_LABELS[job.payment_method] || job.payment_method],
+    ['Total Price', `₱${(job.total_price || 0).toFixed(2)}`],
+    ['Status', job.job_status.charAt(0).toUpperCase() + job.job_status.slice(1)],
+    ['Submitted', new Date(job.created_at).toLocaleString('en-PH')],
+    ['Job Token', `<code style="font-size:10px;">${job.job_token || '—'}</code>`],
   ];
   if (job.delivery_address) fields.push(['Delivery Address', job.delivery_address]);
   if (job.shipmates_booking_id) fields.push(['Tracking Number', `<span class="badge badge-cyan" style="font-family:monospace;">${job.shipmates_booking_id}</span>`]);
 
   document.getElementById('modalBody').innerHTML = fields
-    .map(([l,v]) => `<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-value">${v}</span></div>`)
+    .map(([l, v]) => `<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-value">${v}</span></div>`)
     .join('');
 
   const acts = [];
@@ -347,7 +353,7 @@ function openModal(jobId) {
     acts.push(`<button class="btn btn-outline" style="border-color:var(--cyan);color:var(--cyan);" onclick="window._bookShipment('${job.id}')" id="bookShipmentBtn"><span class="icon icon-sm"><i data-lucide="truck"></i></span> Book Shipment</button>`);
   }
   if (job.job_status !== 'done') acts.push(`<button class="btn btn-outline" style="border-color:var(--magenta);color:var(--magenta);" onclick="window._banModal('${job.device_fingerprint}','${job.id}')"><span class="icon icon-sm"><i data-lucide="shield-off"></i></span> Ban Device</button>`);
-  if (job.file_path) acts.push(`<a class="btn btn-ghost" href="${job.file_path}" target="_blank" rel="noopener"><span class="icon icon-sm"><i data-lucide="file-down"></i></span> View File</a>`);
+  if (job.file_url) acts.push(`<a class="btn btn-ghost" href="${job.file_url}" target="_blank" rel="noopener"><span class="icon icon-sm"><i data-lucide="file-down"></i></span> View File</a>`);
 
   document.getElementById('modalActions').innerHTML = acts.join('');
   document.getElementById('modalBackdrop').classList.add('open');
@@ -369,9 +375,9 @@ window._bookShipment = async (jobId) => {
   if (!job) return;
   const btn = document.getElementById('bookShipmentBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="icon icon-sm"><i data-lucide="loader" class="spin"></i></span> Booking...'; if (window.lucide) window.lucide.createIcons(); }
-  
+
   const res = await createBooking(job);
-  
+
   if (res.success) {
     job.shipmates_booking_id = res.tracking_number;
     if (!state.demo) {
@@ -393,7 +399,7 @@ function timeAgo(isoStr) {
   if (m < 60) return m + 'm ago';
   const h = Math.floor(m / 60);
   if (h < 24) return h + 'h ago';
-  return Math.floor(h/24) + 'd ago';
+  return Math.floor(h / 24) + 'd ago';
 }
 
 function toast(msg, type = 'success') {
@@ -408,7 +414,7 @@ function toast(msg, type = 'success') {
 window._openWalkinModal = () => {
   if (!btFile) return;
   document.getElementById('btBanner').classList.remove('show');
-  
+
   // Reuse existing modal structure for simplicity or create a dedicated one
   document.getElementById('modalTitle').textContent = 'Create Walk-in Job';
   document.getElementById('modalBody').innerHTML = `
@@ -436,12 +442,12 @@ window._openWalkinModal = () => {
       </div>
     </div>
   `;
-  
+
   document.getElementById('modalActions').innerHTML = `
     <button class="btn btn-ghost" onclick="document.getElementById('modalBackdrop').classList.remove('open')">Cancel</button>
     <button class="btn btn-primary" id="wiSaveBtn" onclick="window._saveWalkin()">Add to Queue</button>
   `;
-  
+
   document.getElementById('modalBackdrop').classList.add('open');
 };
 
@@ -449,25 +455,27 @@ window._saveWalkin = async () => {
   const btn = document.getElementById('wiSaveBtn');
   btn.disabled = true;
   btn.textContent = 'Saving...';
-  
+
   const svc = document.getElementById('wiService').value;
   const pgs = parseInt(document.getElementById('wiPages').value) || 1;
   const cps = parseInt(document.getElementById('wiCopies').value) || 1;
-  
+
   const { error } = await supabase.from('jobs').insert([{
     shop_id: state.shopId,
     job_number: Math.floor(1000 + Math.random() * 9000),
+    service_category: 'document_copy',
     service_name: svc,
     pages: pgs,
     copies: cps,
     job_status: 'pending',
-    payment_method: 'walk_in',
+    payment_method: 'cash_pickup',
     payment_status: 'pending',
-    pickup_type: 'pickup',
+    pickup_type: 'walkin',
+    source: 'bluetooth',
     device_fingerprint: 'WALKIN_BT',
-    file_path: 'file://' + btFile.path
+    file_url: 'file://' + btFile.path
   }]);
-  
+
   if (error) {
     toast('Failed to save: ' + error.message, 'error');
     btn.disabled = false;
@@ -483,21 +491,21 @@ window._saveWalkin = async () => {
 window._printJob = async (jobId, btn) => {
   if (!window.electronAPI) return;
   const job = state.jobs.find(j => j.id === jobId);
-  if (!job || !job.file_path) return;
-  
+  if (!job || !job.file_url) return;
+
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="icon icon-xs"><i data-lucide="loader" class="spin"></i></span> Printing...';
   if (window.lucide) window.lucide.createIcons();
-  
-  const res = await window.electronAPI.printFile(job.file_path);
-  
+
+  const res = await window.electronAPI.printFile(job.file_url);
+
   if (res.success) {
     toast('Job sent to printer!', 'success');
   } else {
     toast('Print failed: ' + res.error, 'error');
   }
-  
+
   btn.disabled = false;
   btn.innerHTML = originalHtml;
   if (window.lucide) window.lucide.createIcons();

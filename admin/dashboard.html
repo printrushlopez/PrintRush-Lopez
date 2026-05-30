@@ -1,205 +1,233 @@
 <!DOCTYPE html>
 <html lang="en-PH" data-theme="light">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Platform Admin Dashboard — PrintRUSH Lopez</title>
-<meta name="description" content="Hidden platform admin dashboard for PrintRUSH Lopez." />
-<meta name="robots" content="noindex,nofollow" />
-<link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
-<link rel="stylesheet" href="/css/tokens.css" />
-<link rel="stylesheet" href="/css/components.css" />
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Platform Admin Dashboard — PrintRUSH Lopez</title>
+  <meta name="description" content="Hidden platform admin dashboard for PrintRUSH Lopez." />
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
+
 <body>
-<div class="cmyk-bg" aria-hidden="true"></div>
-<main class="page page-content" style="padding-top:var(--space-10);">
-  <div class="container" style="max-width:1000px;">
-    <header style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-6);">
-      <div>
-        <a href="/" class="logo" style="display:flex;align-items:center;gap:var(--space-3);text-decoration:none;color:inherit;">
-          <div class="cmyk-mark" aria-hidden="true"><div class="dot dot-c"></div><div class="dot dot-m"></div><div class="dot dot-y"></div></div>
-          <div class="logo-text"><span>PrintRUSH</span> Lopez Admin</div>
-        </a>
-        <p style="margin-top:var(--space-3);color:var(--text-muted);max-width:640px;">Private platform administration portal. Only users registered in the Supabase <code>platform_admins</code> table can access this page.</p>
-      </div>
-      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;">
-        <button class="btn btn-outline" id="signOutBtn" type="button">Sign out</button>
-        <a class="btn btn-primary" id="ownerPortalBtn" href="/owner/login.html">Open Owner Portal</a>
-      </div>
-    </header>
+  <div class="cmyk-bg" aria-hidden="true"></div>
+  <main class="page page-content" style="padding-top:var(--space-10);">
+    <div class="container" style="max-width:1000px;">
+      <header
+        style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-6);">
+        <div>
+          <a href="/" class="logo"
+            style="display:flex;align-items:center;gap:var(--space-3);text-decoration:none;color:inherit;">
+            <div class="cmyk-mark" aria-hidden="true">
+              <div class="dot dot-c"></div>
+              <div class="dot dot-m"></div>
+              <div class="dot dot-y"></div>
+            </div>
+            <div class="logo-text"><span>PrintRUSH</span> Lopez Admin</div>
+          </a>
+          <p style="margin-top:var(--space-3);color:var(--text-muted);max-width:640px;">Private platform administration
+            portal. Only users registered in the Supabase <code>platform_admins</code> table can access this page.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-outline" id="signOutBtn" type="button">Sign out</button>
+          <a class="btn btn-primary" id="ownerPortalBtn" href="/owner/login.html">Open Owner Portal</a>
+        </div>
+      </header>
 
-    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-6);">
-      <article class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
-          <div>
-            <h2 style="margin:0;font-size:var(--text-xl);">Shops</h2>
-            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Active shops in the database</p>
+      <section
+        style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-6);">
+        <article class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+            <div>
+              <h2 style="margin:0;font-size:var(--text-xl);">Shops</h2>
+              <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Active shops in the database
+              </p>
+            </div>
+            <span class="badge badge-cyan" id="shopCount">—</span>
           </div>
-          <span class="badge badge-cyan" id="shopCount">—</span>
-        </div>
-        <p style="margin:0;color:var(--text-faint);">This count is loaded directly from Supabase and reflects <code>shops</code> records.</p>
-      </article>
-      <article class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
-          <div>
-            <h2 style="margin:0;font-size:var(--text-xl);">Platform Admins</h2>
-            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Supabase <code>platform_admins</code> users</p>
+          <p style="margin:0;color:var(--text-faint);">This count is loaded directly from Supabase and reflects
+            <code>shops</code> records.</p>
+        </article>
+        <article class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+            <div>
+              <h2 style="margin:0;font-size:var(--text-xl);">Platform Admins</h2>
+              <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Supabase
+                <code>platform_admins</code> users</p>
+            </div>
+            <span class="badge badge-magenta" id="adminCount">—</span>
           </div>
-          <span class="badge badge-magenta" id="adminCount">—</span>
-        </div>
-        <p style="margin:0;color:var(--text-faint);">Only accounts in this table are allowed to enter this dashboard.</p>
-      </article>
-      <article class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
-          <div>
-            <h2 style="margin:0;font-size:var(--text-xl);">Live Jobs</h2>
-            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Total queue records</p>
+          <p style="margin:0;color:var(--text-faint);">Only accounts in this table are allowed to enter this dashboard.
+          </p>
+        </article>
+        <article class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+            <div>
+              <h2 style="margin:0;font-size:var(--text-xl);">Live Jobs</h2>
+              <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Total queue records</p>
+            </div>
+            <span class="badge badge-yellow" id="jobCount">—</span>
           </div>
-          <span class="badge badge-yellow" id="jobCount">—</span>
-        </div>
-        <p style="margin:0;color:var(--text-faint);">Counts jobs across all shops for platform oversight.</p>
-      </article>
-      <article class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
-          <div>
-            <h2 style="margin:0;font-size:var(--text-xl);">Payments</h2>
-            <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Payments stored in Supabase</p>
+          <p style="margin:0;color:var(--text-faint);">Counts jobs across all shops for platform oversight.</p>
+        </article>
+        <article class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+            <div>
+              <h2 style="margin:0;font-size:var(--text-xl);">Payments</h2>
+              <p style="margin:4px 0 0;color:var(--text-muted);font-size:var(--text-sm);">Payments stored in Supabase
+              </p>
+            </div>
+            <span class="badge badge-cyan" id="paymentCount">—</span>
           </div>
-          <span class="badge badge-cyan" id="paymentCount">—</span>
-        </div>
-        <p style="margin:0;color:var(--text-faint);">Shows total payment entries, useful for system audit.</p>
-      </article>
-    </section>
+          <p style="margin:0;color:var(--text-faint);">Shows total payment entries, useful for system audit.</p>
+        </article>
+      </section>
 
-    <section class="card" style="margin-bottom:var(--space-6);">
-      <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Pending Shop Applications</h3>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:var(--text-sm);">
-          <thead>
-            <tr style="border-bottom:1px solid var(--border);color:var(--text-muted);">
-              <th style="padding:var(--space-2) 0;">Shop Name</th>
-              <th style="padding:var(--space-2) 0;">Owner Email</th>
-              <th style="padding:var(--space-2) 0;">Plan</th>
-              <th style="padding:var(--space-2) 0;">Proof of Payment</th>
-              <th style="padding:var(--space-2) 0;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="applicationsTableBody">
-            <tr><td colspan="5" style="padding:var(--space-3) 0;color:var(--text-muted);">Loading applications...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="applicationMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
-    </section>
+      <section class="card" style="margin-bottom:var(--space-6);">
+        <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Pending Shop Applications</h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;text-align:left;font-size:var(--text-sm);">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border);color:var(--text-muted);">
+                <th style="padding:var(--space-2) 0;">Shop Name</th>
+                <th style="padding:var(--space-2) 0;">Owner Email</th>
+                <th style="padding:var(--space-2) 0;">Plan</th>
+                <th style="padding:var(--space-2) 0;">Proof of Payment</th>
+                <th style="padding:var(--space-2) 0;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="applicationsTableBody">
+              <tr>
+                <td colspan="5" style="padding:var(--space-3) 0;color:var(--text-muted);">Loading applications...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="applicationMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+      </section>
 
-    <section class="card" style="margin-bottom:var(--space-6);">
-      <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Shop Management</h3>
-      <form id="createShopForm" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
-        <div class="form-group">
-          <label class="form-label" for="shopName">Shop Name</label>
-          <input class="form-input" type="text" id="shopName" placeholder="PrintRUSH Lopez Main" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="shopSlug">Slug (URL identifier)</label>
-          <input class="form-input" type="text" id="shopSlug" placeholder="printrush-main" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="shopAddress">Address</label>
-          <input class="form-input" type="text" id="shopAddress" placeholder="Lopez, Quezon" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="shopLat">Latitude</label>
-          <input class="form-input" type="number" id="shopLat" step="any" placeholder="13.8833" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="shopLng">Longitude</label>
-          <input class="form-input" type="number" id="shopLng" step="any" placeholder="122.2667" required />
-        </div>
-        <div class="form-group" style="grid-column: 1 / -1;">
-          <button class="btn btn-primary" type="submit" id="createShopBtn" style="width:100%;">
-            <span class="icon icon-sm"><i data-lucide="plus-circle"></i></span>
-            Create New Shop
+      <section class="card" style="margin-bottom:var(--space-6);">
+        <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Shop Management</h3>
+        <form id="createShopForm"
+          style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" for="shopName">Shop Name</label>
+            <input class="form-input" type="text" id="shopName" placeholder="PrintRUSH Lopez Main" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopSlug">Slug (URL identifier)</label>
+            <input class="form-input" type="text" id="shopSlug" placeholder="printrush-main" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopAddress">Address</label>
+            <input class="form-input" type="text" id="shopAddress" placeholder="Lopez, Quezon" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopLat">Latitude</label>
+            <input class="form-input" type="number" id="shopLat" step="any" placeholder="13.8833" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopLng">Longitude</label>
+            <input class="form-input" type="number" id="shopLng" step="any" placeholder="122.2667" required />
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <button class="btn btn-primary" type="submit" id="createShopBtn" style="width:100%;">
+              <span class="icon icon-sm"><i data-lucide="plus-circle"></i></span>
+              Create New Shop
+            </button>
+          </div>
+        </form>
+        <div id="shopMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+      </section>
+
+      <section class="card" style="margin-bottom:var(--space-6);">
+        <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Admin Promotion</h3>
+        <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-4);">Enter the User ID of a
+          registered account to promote them to Platform Admin.</p>
+        <form id="promoteAdminForm" style="display:flex;gap:var(--space-3);flex-wrap:wrap;">
+          <input class="form-input" type="text" id="promoteUserId" placeholder="User UUID from Supabase Auth" required
+            style="flex:1;min-width:280px;" />
+          <button class="btn btn-outline" type="submit" id="promoteBtn">
+            <span class="icon icon-sm"><i data-lucide="shield-check"></i></span>
+            Promote to Admin
           </button>
+        </form>
+        <div id="promoteMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+      </section>
+
+      <!-- ── Send Agent Setup Email ── -->
+      <section class="card" style="margin-bottom:var(--space-6);border-color:var(--cyan-20);">
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
+          <span class="icon icon-md" style="color:var(--cyan);"><i data-lucide="send"></i></span>
+          <h3 style="margin:0;font-size:var(--text-xl);">Send Agent Setup Email</h3>
         </div>
-      </form>
-      <div id="shopMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
-    </section>
+        <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-5);">
+          After creating a shop above, use this form to send the owner a one-click setup email. It includes their
+          <strong>Shop ID</strong>, <strong>Anon Key</strong>, and a direct download link for the
+          <strong>PrintRUSH Desktop Agent (.exe)</strong> installer.
+        </p>
+        <form id="sendAgentEmailForm"
+          style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" for="emailShopName">Shop Name</label>
+            <input class="form-input" type="text" id="emailShopName" placeholder="Lopez Print Center" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emailShopId">Shop ID (UUID)</label>
+            <input class="form-input" type="text" id="emailShopId" placeholder="Paste from Shop Management above"
+              required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emailOwnerEmail">Owner's Email Address</label>
+            <input class="form-input" type="email" id="emailOwnerEmail" placeholder="owner@shop.com" required />
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <button class="btn btn-primary" type="submit" id="sendEmailBtn" style="width:100%;">
+              <span class="icon icon-sm"><i data-lucide="send"></i></span>
+              Send Setup Email to Owner
+            </button>
+          </div>
+        </form>
+        <div id="sendEmailMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
+      </section>
 
-    <section class="card" style="margin-bottom:var(--space-6);">
-      <h3 style="margin-top:0;font-size:var(--text-xl);margin-bottom:var(--space-4);">Admin Promotion</h3>
-      <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-4);">Enter the User ID of a registered account to promote them to Platform Admin.</p>
-      <form id="promoteAdminForm" style="display:flex;gap:var(--space-3);flex-wrap:wrap;">
-        <input class="form-input" type="text" id="promoteUserId" placeholder="User UUID from Supabase Auth" required style="flex:1;min-width:280px;" />
-        <button class="btn btn-outline" type="submit" id="promoteBtn">
-          <span class="icon icon-sm"><i data-lucide="shield-check"></i></span>
-          Promote to Admin
-        </button>
-      </form>
-      <div id="promoteMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
-    </section>
-
-    <!-- ── Send Agent Setup Email ── -->
-    <section class="card" style="margin-bottom:var(--space-6);border-color:var(--cyan-20);">
-      <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
-        <span class="icon icon-md" style="color:var(--cyan);"><i data-lucide="send"></i></span>
-        <h3 style="margin:0;font-size:var(--text-xl);">Send Agent Setup Email</h3>
-      </div>
-      <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:var(--space-5);">
-        After creating a shop above, use this form to send the owner a one-click setup email. It includes their
-        <strong>Shop ID</strong>, <strong>Anon Key</strong>, and a direct download link for the
-        <strong>PrintRUSH Desktop Agent (.exe)</strong> installer.
-      </p>
-      <form id="sendAgentEmailForm" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:var(--space-4);">
-        <div class="form-group">
-          <label class="form-label" for="emailShopName">Shop Name</label>
-          <input class="form-input" type="text" id="emailShopName" placeholder="Lopez Print Center" required />
+      <section class="card" style="margin-bottom:var(--space-6);">
+        <h3 style="margin-top:0;font-size:var(--text-xl);">Platform Insights</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);">
+          <button class="btn btn-outline" id="refreshBtn" type="button"
+            title="Reload platform statistics from Supabase">Refresh stats</button>
+          <button class="btn btn-outline" id="routeAuditBtn" type="button"
+            title="Show a verified route audit for the static site and admin portal">Verify routes</button>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="emailShopId">Shop ID (UUID)</label>
-          <input class="form-input" type="text" id="emailShopId" placeholder="Paste from Shop Management above" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="emailOwnerEmail">Owner's Email Address</label>
-          <input class="form-input" type="email" id="emailOwnerEmail" placeholder="owner@shop.com" required />
-        </div>
-        <div class="form-group" style="grid-column: 1 / -1;">
-          <button class="btn btn-primary" type="submit" id="sendEmailBtn" style="width:100%;">
-            <span class="icon icon-sm"><i data-lucide="send"></i></span>
-            Send Setup Email to Owner
-          </button>
-        </div>
-      </form>
-      <div id="sendEmailMessage" style="margin-top:var(--space-4);font-size:var(--text-sm);"></div>
-    </section>
-
-    <section class="card" style="margin-bottom:var(--space-6);">
-      <h3 style="margin-top:0;font-size:var(--text-xl);">Platform Insights</h3>
-      <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);">
-        <button class="btn btn-outline" id="refreshBtn" type="button" title="Reload platform statistics from Supabase">Refresh stats</button>
-        <button class="btn btn-outline" id="routeAuditBtn" type="button" title="Show a verified route audit for the static site and admin portal">Verify routes</button>
-      </div>
-      <div id="auditReport" style="margin-top:var(--space-4);color:var(--text-muted);font-size:var(--text-sm);line-height:1.7;"></div>
-    </section>
+        <div id="auditReport"
+          style="margin-top:var(--space-4);color:var(--text-muted);font-size:var(--text-sm);line-height:1.7;"></div>
+      </section>
 
 
-    <section class="card">
-      <h3 style="margin-top:0;font-size:var(--text-xl);">System notes</h3>
-      <ul style="margin:var(--space-3) 0 0;padding-left:1.2rem;color:var(--text-muted);font-size:var(--text-sm);line-height:1.8;">
-        <li>The admin portal is hidden and requires the correct <code>code</code> query parameter.</li>
-        <li>Only users present in <code>platform_admins</code> may access this dashboard.</li>
-        <li>Use the <strong>Shop Management</strong> form above to create shops without using the SQL editor.</li>
-        <li>The landing page map uses the same Supabase connection and falls back to active shops if the geolocation RPC is unavailable.</li>
-      </ul>
-    </section>
-  </div>
-</main>
+      <section class="card">
+        <h3 style="margin-top:0;font-size:var(--text-xl);">System notes</h3>
+        <ul
+          style="margin:var(--space-3) 0 0;padding-left:1.2rem;color:var(--text-muted);font-size:var(--text-sm);line-height:1.8;">
+          <li>The admin portal is hidden and requires the correct <code>code</code> query parameter.</li>
+          <li>Only users present in <code>platform_admins</code> may access this dashboard.</li>
+          <li>Use the <strong>Shop Management</strong> form above to create shops without using the SQL editor.</li>
+          <li>The landing page map uses the same Supabase connection and falls back to active shops if the geolocation
+            RPC is unavailable.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
 
-<script>
-const root = document.documentElement;
-const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-root.setAttribute('data-theme', saved);
-</script>
-<script type="module" src="/js/admin/dashboard.js"></script>
+  <script>
+    const root = document.documentElement;
+    const saved = localStorage.getItem('printrush-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    root.setAttribute('data-theme', saved);
+  </script>
+  <script type="module" src="/js/admin/dashboard.js"></script>
 </body>
+
 </html>

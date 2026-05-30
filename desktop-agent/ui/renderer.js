@@ -11,8 +11,12 @@ async function init() {
     return;
   }
   
-  shopId = env.SHOP_ID || 1; // Default to 1 if not set
-  supabase = window.supabase.createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+  shopId = env.SHOP_ID || null;
+  if (!shopId) {
+    document.getElementById('queueList').innerHTML = '<div style="color:orange;font-size:14px;">⚠️ No Shop ID configured. Please re-run setup.</div>';
+    return;
+  }
+  supabase = window.electronAPI.createSupabaseClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
   
   loadQueue();
   subscribeQueue();
@@ -58,7 +62,7 @@ async function loadQueue() {
     <div class="mirror-item">
       <div>
         <div style="font-weight:bold;color:var(--cyan)">#${job.job_number}</div>
-        <div style="font-size:12px;color:var(--text-muted)">Walk-in • ${job.service_type || 'Document'}</div>
+        <div style="font-size:12px;color:var(--text-muted)">Walk-in • ${job.service_name || 'Document'}</div>
       </div>
       <div>
         <span class="badge ${job.job_status === 'pending' ? 'badge-yellow' : 'badge-cyan'}">${job.job_status.toUpperCase()}</span>
@@ -98,13 +102,14 @@ async function createJob() {
     shop_id: shopId,
     job_number: Math.floor(1000 + Math.random() * 9000),
     service_category: service,
-    service_type: service === 'documents' ? 'Black & White' : 'Standard',
+    service_name: service === 'documents' ? 'Document Printing (B&W)' : service === 'photo' ? 'Photo Print (4R)' : 'Tarpaulin Printing',
     pages: pgs,
     copies: cps,
     payment_method: 'cash_pickup',
     payment_status: 'pending',
     job_status: 'pending',
-    pickup_type: 'pickup',
+    pickup_type: 'walkin',
+    source: 'bluetooth',
     device_fingerprint: 'WALKIN_BT', // Tag as bluetooth walk-in
     file_url: 'file://' + currentFile.path // Store local path as reference
   }]);

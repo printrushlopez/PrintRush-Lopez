@@ -102,9 +102,11 @@ async function init() {
       return;
     }
 
-  // NO SHOP OWNER FOUND → AUTO CREATE SHOP
-if (!data) {
-
+    if (data) {
+      state.shopId = data.shop_id;
+      state.shopData = data.shops;
+      state.shopSlug = data.shops?.slug;
+      shopName = data.shops?.name || shopName;
   console.log('No shop found. Creating new shop...');
 
   const emailPrefix =
