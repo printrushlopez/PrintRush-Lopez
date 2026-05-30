@@ -19,7 +19,7 @@ const store = new Store({
     shopId:       { type: 'string', default: '' },
     supabaseUrl:  { type: 'string', default: 'https://iovsadqmwnjssrcxvagu.supabase.co' },
     supabaseKey:  { type: 'string', default: SUPABASE_ANON_KEY },
-    appUrl:       { type: 'string', default: 'https://print-rush-lopez.vercel.app' },
+    appUrl:       { type: 'string', default: 'https://printrush-lopez.vercel.app' },
     btFolder:     { type: 'string', default: 'C:\\Users\\Public\\Downloads' }
   }
 });
