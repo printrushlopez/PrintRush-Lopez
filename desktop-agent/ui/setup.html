@@ -193,8 +193,6 @@
   </div>
 
   <script>
-    const { ipcRenderer } = require('electron');
-
     document.getElementById('setupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const errorBox  = document.getElementById('errorBox');
@@ -212,10 +210,17 @@
       btn.disabled = true;
       btn.textContent = 'Connecting…';
 
-      const result = await ipcRenderer.invoke('save-config', { shopId });
+      try {
+        const result = await window.electronAPI.saveConfig({ shopId });
 
-      if (!result.success) {
-        errorBox.textContent = result.error || 'Something went wrong. Please try again.';
+        if (!result.success) {
+          errorBox.textContent = result.error || 'Something went wrong. Please try again.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Connect My Shop →';
+        }
+      } catch (err) {
+        errorBox.textContent = err.message || 'Something went wrong. Please try again.';
         errorBox.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Connect My Shop →';
