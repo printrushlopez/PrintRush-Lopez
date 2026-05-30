@@ -78,7 +78,10 @@ function createMainWindow() {
   console.log('[PrintRUSH] Loading local mirror UI');
   mainWindow.loadFile(path.join(__dirname, 'ui', 'index.html'));
 
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    mainWindow.webContents.openDevTools();
+  });
 
   mainWindow.on('close', (event) => {
     if (!app.isQuiting) {

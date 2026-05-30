@@ -73,11 +73,30 @@ async function loadQueue() {
 
 function subscribeQueue() {
   if (!supabaseClient) return;
-  supabaseClient.channel('public:jobs')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `shop_id=eq.${shopId}` }, () => {
+  
+  console.log('[PrintRUSH] Initializing Realtime channel for shop_id:', shopId);
+  
+  const channel = supabaseClient.channel('public:jobs')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'jobs', 
+      filter: `shop_id=eq.${shopId}` 
+    }, (payload) => {
+      console.log('[PrintRUSH] Realtime change detected:', payload);
       loadQueue();
-    })
-    .subscribe();
+    });
+
+  channel.subscribe((status) => {
+    console.log('[PrintRUSH] Realtime subscription status:', status);
+    if (status === 'SUBSCRIBED') {
+      console.log('[PrintRUSH] Realtime connection is active and listening for updates!');
+    } else if (status === 'CLOSED') {
+      console.log('[PrintRUSH] Realtime connection closed.');
+    } else if (status === 'CHANNEL_ERROR') {
+      console.error('[PrintRUSH] Realtime channel subscription error.');
+    }
+  });
 }
 
 async function createJob() {
