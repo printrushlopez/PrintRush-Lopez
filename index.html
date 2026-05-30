@@ -1318,7 +1318,7 @@
             agentVersionText.textContent = `Version ${data.tag_name.replace('v', '')}`;
             
             // Find the .exe asset if the name happens to change in future releases
-            const exeAsset = data.assets && data.assets.find(a => a.name.endsWith('.exe'));
+            const exeAsset = data.assets && (data.assets.find(a => a.name.endsWith('.exe')) || data.assets.find(a => a.name.endsWith('.zip')));
             if (exeAsset) {
               downloadAgentBtn.href = exeAsset.browser_download_url;
               downloadAgentBtn.setAttribute('download', exeAsset.name);
