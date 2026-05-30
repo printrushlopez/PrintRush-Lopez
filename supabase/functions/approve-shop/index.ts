@@ -107,7 +107,7 @@ serve(async (req: Request) => {
       .eq('id', applicationId);
 
     // 6. Send Email
-    const downloadUrl = 'https://github.com/printrushlopez/PrintRush-Lopez/releases/latest/download/PrintRUSH.Desktop.Agent.Setup.1.0.0.exe';
+    const downloadUrl = 'https://github.com/printrushlopez/PrintRush-Lopez/releases/latest';
     
     let passwordMessage = userErr && userErr.message.includes('already exists') 
       ? `<p>You already have an account with this email. Please use your existing password to log into the web portal.</p>`
@@ -148,8 +148,8 @@ serve(async (req: Request) => {
       <p>Great news — your shop application has been confirmed and is now ready to go live on the PrintRUSH Lopez platform!</p>
       <p>Follow these 3 easy steps to get started:</p>
       <ol style="color:#444;font-size:15px;line-height:2;padding-left:20px;">
-        <li>Click the <strong>Download PrintRUSH Agent</strong> button below</li>
-        <li>Install it like any Windows program (Next → Next → Finish)</li>
+        <li>Click the <strong>Download PrintRUSH Agent</strong> button below to go to the download page</li>
+        <li>Download and install the agent for Windows</li>
         <li>When the app opens, paste in your <strong>Shop ID</strong> below</li>
       </ol>
 
@@ -161,7 +161,7 @@ serve(async (req: Request) => {
 
       <p style="font-size:13px;color:#888;">Keep these credentials safe. The desktop app only needs your Shop ID.</p>
 
-      <a href="${downloadUrl}" class="btn">⬇️ Download PrintRUSH Agent (.exe)</a>
+      <a href="${downloadUrl}" class="btn">⬇️ Download PrintRUSH Agent</a>
     </div>
     <div class="footer">
       PrintRUSH Lopez — Municipality of Lopez, Quezon

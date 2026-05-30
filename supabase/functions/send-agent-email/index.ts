@@ -31,7 +31,7 @@ serve(async (req: Request) => {
     );
 
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    const downloadUrl = 'https://github.com/printrushlopez/PrintRush-Lopez/releases/latest/download/PrintRUSH-Setup.exe';
+    const downloadUrl = 'https://github.com/printrushlopez/PrintRush-Lopez/releases/latest';
 
     // Send email via Supabase Auth admin API (uses configured SMTP)
     const emailBody = `
@@ -66,8 +66,8 @@ serve(async (req: Request) => {
       <p>Great news — your shop has been confirmed and is now ready to go live on the PrintRUSH Lopez platform!</p>
       <p>Follow these 3 easy steps to get started:</p>
       <ol style="color:#444;font-size:15px;line-height:2;padding-left:20px;">
-        <li>Click the <strong>Download PrintRUSH Agent</strong> button below</li>
-        <li>Install it like any Windows program (Next → Next → Finish)</li>
+        <li>Click the <strong>Download PrintRUSH Agent</strong> button below to go to the download page</li>
+        <li>Download and install the agent for Windows</li>
         <li>When the app opens, paste in your <strong>Shop ID</strong> and <strong>Anon Key</strong> below</li>
       </ol>
 
@@ -80,7 +80,7 @@ serve(async (req: Request) => {
 
       <p style="font-size:13px;color:#888;">Keep these credentials safe. They are unique to your shop and allow the desktop app to connect to the PrintRUSH system securely.</p>
 
-      <a href="${downloadUrl}" class="btn">⬇️ Download PrintRUSH Agent (.exe)</a>
+      <a href="${downloadUrl}" class="btn">⬇️ Download PrintRUSH Agent</a>
     </div>
     <div class="footer">
       PrintRUSH Lopez — Municipality of Lopez, Quezon<br>
