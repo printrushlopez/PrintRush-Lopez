@@ -1,4 +1,4 @@
-let supabase = null;
+let supabaseClient = null;
 let currentFile = null;
 let shopId = null;
 
@@ -16,7 +16,7 @@ async function init() {
     document.getElementById('queueList').innerHTML = '<div style="color:orange;font-size:14px;">⚠️ No Shop ID configured. Please re-run setup.</div>';
     return;
   }
-  supabase = window.supabase.createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+  supabaseClient = window.supabase.createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
   
   loadQueue();
   subscribeQueue();
@@ -39,9 +39,9 @@ async function init() {
 
 async function loadQueue() {
   const list = document.getElementById('queueList');
-  if (!supabase) return;
+  if (!supabaseClient) return;
   
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('jobs')
     .select('*')
     .eq('shop_id', shopId)
@@ -72,8 +72,8 @@ async function loadQueue() {
 }
 
 function subscribeQueue() {
-  if (!supabase) return;
-  supabase.channel('public:jobs')
+  if (!supabaseClient) return;
+  supabaseClient.channel('public:jobs')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `shop_id=eq.${shopId}` }, () => {
       loadQueue();
     })
@@ -81,7 +81,7 @@ function subscribeQueue() {
 }
 
 async function createJob() {
-  if (!currentFile || !supabase) return;
+  if (!currentFile || !supabaseClient) return;
   
   const btn = document.getElementById('createWalkinBtn');
   btn.textContent = 'Uploading...';
@@ -98,7 +98,7 @@ async function createJob() {
   // Fake upload delay
   await new Promise(r => setTimeout(r, 600));
   
-  const { error } = await supabase.from('jobs').insert([{
+  const { error } = await supabaseClient.from('jobs').insert([{
     shop_id: shopId,
     job_number: Math.floor(1000 + Math.random() * 9000),
     service_category: service,
