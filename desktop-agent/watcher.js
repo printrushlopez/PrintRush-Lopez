@@ -21,6 +21,7 @@ function startWatching(watchFolder, onFileReceived) {
     ignored: /(^|[\/\\])\../, // ignore dotfiles
     persistent: true,
     ignoreInitial: true, // Don't trigger on existing files
+    depth: 0,
     awaitWriteFinish: {
       stabilityThreshold: 2000,
       pollInterval: 100
