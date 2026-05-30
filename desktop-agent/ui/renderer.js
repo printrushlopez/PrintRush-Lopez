@@ -2,7 +2,72 @@ let supabaseClient = null;
 let currentFile = null;
 let shopId = null;
 
+// ── Tab Switching ──────────────────────────────────────────────────────────────
+function initTabs() {
+  document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+
+      // Update nav active state
+      document.querySelectorAll('.nav-item[data-tab]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Show the matching panel
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(`panel-${tab}`).classList.add('active');
+
+      // Lazy-load panel content
+      if (tab === 'devices') loadDevicesPanel();
+      if (tab === 'settings') loadSettingsPanel();
+    });
+  });
+}
+
+// ── Devices Panel ──────────────────────────────────────────────────────────────
+async function loadDevicesPanel() {
+  const cfg = await window.electronAPI.getConfig();
+  const folderEl = document.getElementById('deviceBtFolder');
+  if (folderEl) folderEl.textContent = cfg.btFolder || 'No folder configured';
+}
+
+// ── Settings Panel ──────────────────────────────────────────────────────────────
+async function loadSettingsPanel() {
+  const cfg = await window.electronAPI.getConfig();
+  document.getElementById('cfgShopId').value      = cfg.shopId      || '';
+  document.getElementById('cfgSupabaseUrl').value = cfg.supabaseUrl || '';
+  document.getElementById('cfgBtFolder').value    = cfg.btFolder    || '';
+  document.getElementById('cfgAppUrl').value      = cfg.appUrl      || '';
+}
+
+function initSettingsSave() {
+  document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+    const btFolder = document.getElementById('cfgBtFolder').value.trim();
+    const appUrl   = document.getElementById('cfgAppUrl').value.trim();
+    const toast    = document.getElementById('settingsToast');
+
+    const result = await window.electronAPI.saveConfig({
+      shopId: document.getElementById('cfgShopId').value.trim(),
+      btFolder,
+      appUrl
+    });
+
+    toast.className = 'settings-toast';
+    if (result.success) {
+      toast.textContent = '✓ Settings saved successfully!';
+      toast.classList.add('success');
+    } else {
+      toast.textContent = '✕ Failed to save: ' + (result.error || 'Unknown error');
+      toast.classList.add('error');
+    }
+    setTimeout(() => { toast.className = 'settings-toast'; }, 3000);
+  });
+}
+
 async function init() {
+  // Set up tab switching
+  initTabs();
+  initSettingsSave();
+
   // Get ENV vars securely from main process
   const env = await window.electronAPI.getEnv();
   
@@ -36,6 +101,7 @@ async function init() {
 
   document.getElementById('createWalkinBtn').addEventListener('click', createJob);
 }
+
 
 async function loadQueue() {
   const list = document.getElementById('queueList');

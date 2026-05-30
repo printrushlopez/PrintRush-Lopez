@@ -205,6 +205,14 @@ if (!gotTheLock) {
   });
 }
 
+// ── IPC: Return full config to renderer ───────────────────────────────────────
+ipcMain.handle('get-config', () => ({
+  shopId:      store.get('shopId', ''),
+  btFolder:    store.get('btFolder', ''),
+  appUrl:      store.get('appUrl', ''),
+  supabaseUrl: store.get('supabaseUrl', ''),
+}));
+
 // ── IPC: Setup form saves config and launches portal ──────────────────────────
 ipcMain.handle('save-config', async (event, config) => {
   try {
