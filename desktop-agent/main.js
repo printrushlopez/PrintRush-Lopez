@@ -20,7 +20,7 @@ const store = new Store({
     supabaseUrl:  { type: 'string', default: 'https://iovsadqmwnjssrcxvagu.supabase.co' },
     supabaseKey:  { type: 'string', default: SUPABASE_ANON_KEY },
     appUrl:       { type: 'string', default: 'https://printrush-lopez.vercel.app' },
-    btFolder:     { type: 'string', default: 'C:\\Users\\Public\\Downloads' }
+    btFolder:     { type: 'string', default: path.join(os.homedir(), 'Documents') }
   }
 });
 
@@ -63,7 +63,7 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     width:  1200,
     height: 800,
-    show: false,
+    show: true,
     title: 'PrintRUSH Desktop Agent',
     webPreferences: {
       preload: path.join(__dirname, 'ui', 'preload.js'),
@@ -72,18 +72,10 @@ function createMainWindow() {
     }
   });
 
-  const appUrl = store.get('appUrl');
-  console.log(`[PrintRUSH] Loading portal: ${appUrl}/owner/queue`);
-
-  mainWindow.loadURL(`${appUrl}/owner/queue`).catch(() => {
-    mainWindow.loadFile(path.join(__dirname, 'ui', 'index.html'));
-  });
-
-  mainWindow.webContents.on('did-fail-load', () => {
-    if (!appUrl.includes('localhost')) {
-      mainWindow.loadFile(path.join(__dirname, 'ui', 'index.html'));
-    }
-  });
+  // Load the local mirror UI — this is where bluetooth-file-received IPC is handled.
+  // The web portal can be opened separately via the tray menu.
+  console.log('[PrintRUSH] Loading local mirror UI');
+  mainWindow.loadFile(path.join(__dirname, 'ui', 'index.html'));
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
 
@@ -125,7 +117,17 @@ function createTray() {
   tray.setToolTip('PrintRUSH Desktop Agent — Running');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Open Queue',  click: () => mainWindow?.show() },
+    { label: 'Open Portal (Web Queue)',  click: () => {
+        mainWindow?.loadURL(`${store.get('appUrl')}/owner/queue`);
+        mainWindow?.show();
+      }
+    },
+    { label: 'Open Local Mirror (Offline)', click: () => {
+        mainWindow?.loadFile(path.join(__dirname, 'ui', 'index.html'));
+        mainWindow?.show();
+      }
+    },
+    { type: 'separator' },
     { label: 'Check for Updates', click: () => autoUpdater.checkForUpdatesAndNotify() },
     { type: 'separator' },
     { label: 'Disconnect Shop (Reset ID)', click: () => {
