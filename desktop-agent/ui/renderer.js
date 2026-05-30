@@ -16,7 +16,7 @@ async function init() {
     document.getElementById('queueList').innerHTML = '<div style="color:orange;font-size:14px;">⚠️ No Shop ID configured. Please re-run setup.</div>';
     return;
   }
-  supabase = window.electronAPI.createSupabaseClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+  supabase = window.supabase.createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
   
   loadQueue();
   subscribeQueue();

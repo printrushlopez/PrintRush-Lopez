@@ -1,10 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
-const { createClient } = require('@supabase/supabase-js');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getEnv: () => ipcRenderer.invoke('get-env'),
   onBluetoothFileReceived: (callback) => ipcRenderer.on('bluetooth-file-received', (_event, fileInfo) => callback(fileInfo)),
   printFile: (urlOrPath) => ipcRenderer.invoke('print-file', urlOrPath),
-  saveConfig: (config) => ipcRenderer.invoke('save-config', config),
-  createSupabaseClient: (url, key) => createClient(url, key)
+  saveConfig: (config) => ipcRenderer.invoke('save-config', config)
 });
