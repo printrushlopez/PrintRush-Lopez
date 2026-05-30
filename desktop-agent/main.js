@@ -24,6 +24,11 @@ const store = new Store({
   }
 });
 
+// Auto-migrate old incorrect default URL if it exists
+if (store.get('appUrl') === 'https://print-rush-lopez.vercel.app') {
+  store.set('appUrl', 'https://printrush-lopez.vercel.app');
+}
+
 let tray      = null;
 let mainWindow  = null;
 let setupWindow = null;
@@ -122,6 +127,23 @@ function createTray() {
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Open Queue',  click: () => mainWindow?.show() },
     { label: 'Check for Updates', click: () => autoUpdater.checkForUpdatesAndNotify() },
+    { type: 'separator' },
+    { label: 'Disconnect Shop (Reset ID)', click: () => {
+        dialog.showMessageBox(mainWindow || setupWindow, {
+          type: 'warning',
+          title: 'Disconnect Shop',
+          message: 'Are you sure you want to disconnect this shop? This will clear the saved Shop ID and reset the setup.',
+          buttons: ['Yes', 'No']
+        }).then(result => {
+          if (result.response === 0) {
+            store.set('shopId', '');
+            app.relaunch();
+            app.isQuiting = true;
+            app.quit();
+          }
+        });
+      }
+    },
     { type: 'separator' },
     { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
   ]);
