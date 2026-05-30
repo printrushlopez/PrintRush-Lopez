@@ -2,7 +2,8 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs   = require('fs');
 const os   = require('os');
-const axios = require('axios');
+const https = require('https');
+const http  = require('http');
 const ptp   = require('pdf-to-printer');
 const { startWatching } = require('./watcher');
 const { autoUpdater }   = require('electron-updater');
@@ -233,6 +234,30 @@ ipcMain.handle('get-env', () => ({
   SHOP_ID:       store.get('shopId')
 }));
 
+function downloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const client = url.startsWith('https') ? https : http;
+    client.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to download file: ${response.statusCode} ${response.statusMessage}`));
+        return;
+      }
+      const file = fs.createWriteStream(dest);
+      response.pipe(file);
+      file.on('finish', () => {
+        file.close();
+        resolve();
+      });
+      file.on('error', (err) => {
+        fs.unlink(dest, () => {});
+        reject(err);
+      });
+    }).on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
 // ── IPC: Silent print ──────────────────────────────────────────────────────────
 ipcMain.handle('print-file', async (event, urlOrPath) => {
   try {
@@ -240,12 +265,9 @@ ipcMain.handle('print-file', async (event, urlOrPath) => {
     let isTemp   = false;
 
     if (urlOrPath.startsWith('http')) {
-      const response = await axios({ url: urlOrPath, method: 'GET', responseType: 'stream' });
       const fileName = `printrush_${Date.now()}_${path.basename(urlOrPath)}`;
       filePath = path.join(os.tmpdir(), fileName);
-      const writer = fs.createWriteStream(filePath);
-      response.data.pipe(writer);
-      await new Promise((resolve, reject) => { writer.on('finish', resolve); writer.on('error', reject); });
+      await downloadFile(urlOrPath, filePath);
       isTemp = true;
     } else if (urlOrPath.startsWith('file://')) {
       filePath = urlOrPath.replace('file://', '');
